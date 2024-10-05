@@ -15,7 +15,7 @@ import {
 } from "../../utilities/office-apis-helpers";
 import Frame1 from "./Frame1";
 import Frame2 from "./Frame2";
-
+import Frame3 from "./Frame3";
 export interface AppProps {
   title: string;
   isOfficeInitialized: boolean;
@@ -50,6 +50,7 @@ export default class App extends React.Component<AppProps, AppState> {
     this.login = this.login.bind(this);
     this.switchToFrame1 = this.switchToFrame1.bind(this);
     this.switchToFrame2 = this.switchToFrame2.bind(this);
+    this.switchToFrame3 = this.switchToFrame3.bind(this);
   }
 
   /*
@@ -155,6 +156,10 @@ export default class App extends React.Component<AppProps, AppState> {
     this.setState({ currentFrame: "Frame2" });
   };
 
+  switchToFrame3 = () => {
+    this.setState({ currentFrame: "Frame3" });
+  };
+
   render() {
     const { title, isOfficeInitialized } = this.props;
 
@@ -174,7 +179,9 @@ export default class App extends React.Component<AppProps, AppState> {
     if (this.state.currentFrame === "Frame1") {
       body = <Frame1 switchToFrame2={this.switchToFrame2} />;
     } else if (this.state.currentFrame === "Frame2") {
-      body = <Frame2 switchToFrame3={this.switchToFrame1}/>;
+      body = <Frame2 switchToFrame3={this.switchToFrame3}/>;
+    } else if (this.state.currentFrame === "Frame3") {
+      body = <Frame3 />;
     } else if (this.state.authStatus === "notLoggedIn") {
       body = <StartPageBody login={this.login} listItems={this.listItems} />;
     } else if (this.state.authStatus === "loginInProcess") {
