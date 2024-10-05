@@ -14,6 +14,7 @@ import {
   signInO365,
 } from "../../utilities/office-apis-helpers";
 import Frame1 from "./Frame1";
+import Frame2 from "./Frame2";
 
 export interface AppProps {
   title: string;
@@ -48,6 +49,7 @@ export default class App extends React.Component<AppProps, AppState> {
     this.displayError = this.displayError.bind(this);
     this.login = this.login.bind(this);
     this.switchToFrame1 = this.switchToFrame1.bind(this);
+    this.switchToFrame2 = this.switchToFrame2.bind(this);
   }
 
   /*
@@ -149,6 +151,10 @@ export default class App extends React.Component<AppProps, AppState> {
     this.setState({ currentFrame: "Frame1" });
   };
 
+  switchToFrame2 = () => {
+    this.setState({ currentFrame: "Frame2" });
+  };
+
   render() {
     const { title, isOfficeInitialized } = this.props;
 
@@ -165,7 +171,11 @@ export default class App extends React.Component<AppProps, AppState> {
     // Set the body of the page based on where the user is in the workflow.
     let body;
 
-    if (this.state.authStatus === "notLoggedIn") {
+    if (this.state.currentFrame === "Frame1") {
+      body = <Frame1 switchToFrame2={this.switchToFrame2} />;
+    } else if (this.state.currentFrame === "Frame2") {
+      body = <Frame2 switchToFrame3={this.switchToFrame1}/>;
+    } else if (this.state.authStatus === "notLoggedIn") {
       body = <StartPageBody login={this.login} listItems={this.listItems} />;
     } else if (this.state.authStatus === "loginInProcess") {
       body = (
