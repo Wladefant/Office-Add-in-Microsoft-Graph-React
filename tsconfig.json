@@ -10,9 +10,10 @@
     "removeComments": false,
     "outDir": "dist",
     "allowUnusedLabels": false,
+    "esModuleInterop": true,
     "noImplicitReturns": true,
-    "noUnusedParameters": true,
-    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false,
     "lib": [
       "es7",
       "dom"

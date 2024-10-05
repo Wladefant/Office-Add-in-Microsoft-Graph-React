@@ -66,3 +66,6 @@ typings/**
 .awcache/**
 
 dist/**
+
+# Ignore the openaiKey.js file
+config/openaiKey.js

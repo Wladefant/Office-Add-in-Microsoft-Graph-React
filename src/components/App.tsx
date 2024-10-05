@@ -13,6 +13,7 @@ import {
   logoutFromO365,
   signInO365,
 } from "../../utilities/office-apis-helpers";
+import Frame1 from "./Frame1";
 
 export interface AppProps {
   title: string;
@@ -24,6 +25,7 @@ export interface AppState {
   fileFetch?: string;
   headerMessage?: string;
   errorMessage?: string;
+  currentFrame: string;
 }
 
 export default class App extends React.Component<AppProps, AppState> {
@@ -34,6 +36,7 @@ export default class App extends React.Component<AppProps, AppState> {
       fileFetch: "notFetched",
       headerMessage: "Welcome",
       errorMessage: "",
+      currentFrame: "default",
     };
 
     // Bind the methods that we want to pass to, and call in, a separate
@@ -44,6 +47,7 @@ export default class App extends React.Component<AppProps, AppState> {
     this.setUserName = this.setUserName.bind(this);
     this.displayError = this.displayError.bind(this);
     this.login = this.login.bind(this);
+    this.switchToFrame1 = this.switchToFrame1.bind(this);
   }
 
   /*
@@ -141,6 +145,10 @@ export default class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  switchToFrame1 = () => {
+    this.setState({ currentFrame: "Frame1" });
+  };
+
   render() {
     const { title, isOfficeInitialized } = this.props;
 
@@ -191,6 +199,17 @@ export default class App extends React.Component<AppProps, AppState> {
           />
         );
       }
+    
+    }
+    if (this.state.currentFrame === "default") {
+      body = (
+        <div>
+          <button onClick={this.switchToFrame1}>Go to Home</button>
+          {/* Render the default page content here */}
+        </div>
+      );
+    } else if (this.state.currentFrame === "Frame1") {
+      body = <Frame1 switchToFrame2={this.switchToFrame1} />;
     }
 
     return (

@@ -30,7 +30,7 @@ export const signInO365 = (setState: (x: AppState) => void,
     setUserName: (x: string) => void,
     displayError: (x: string) => void) => {
 
-    setState({ authStatus: 'loginInProcess' });
+    setState({ authStatus: 'loginInProcess', currentFrame: 'default' });
 
     Office.context.ui.displayDialogAsync(
         dialogLoginUrl,
@@ -62,7 +62,8 @@ export const signInO365 = (setState: (x: AppState) => void,
             setUserName(messageFromDialog.userName);
             setState({
                 authStatus: 'loggedIn',
-                headerMessage: 'Get Data'
+                headerMessage: 'Get Data',
+                currentFrame: 'default'
             });
         }
         else {
@@ -110,7 +111,8 @@ export const logoutFromO365 = async (setState: (x: AppState) => void,
         logoutDialog.close();
         setState({
             authStatus: 'notLoggedIn',
-            headerMessage: 'Welcome'
+            headerMessage: 'Welcome',
+            currentFrame: 'default'
         });
         setUserName('');
     };
@@ -138,7 +140,8 @@ const processDialogEvent = (arg: { error: number, type: string },
             // press the login button again even if the user is logged in.
             setState({
                 authStatus: 'notLoggedIn',
-                headerMessage: 'Welcome'
+                headerMessage: 'Welcome',
+                currentFrame: 'default'
             });
             break;
         default:
