@@ -10,24 +10,9 @@ export const writeFileNamesToEmail = async (
     displayError: (x: string) => void
   ) => {
     try {
-      const item = Office.context.mailbox.item;
-  
-      // Extract the names from the result
-      const names = result.data.value.slice(0, 3).map((v) => v.name);
-  
-      // Convert names to Markdown list format
-      const markdown = names.map((name) => `- ${name}`).join('\n');
-  
-      // Set the reply body content to the Markdown text
-      item.body.setAsync(
-        markdown,
-        { coercionType: Office.CoercionType.Text },
-        (asyncResult) => {
-          if (asyncResult.status === Office.AsyncResultStatus.Failed) {
-            displayError(asyncResult.error.message);
-          }
-        }
-      );
+      const names = result.data.value.slice(0, 3).map((item) => item.name);
+      const message = names.join('\n');
+      displayError(message);
     } catch (error) {
       displayError(error.toString());
     }
