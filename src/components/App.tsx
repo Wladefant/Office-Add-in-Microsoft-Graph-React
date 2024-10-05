@@ -199,17 +199,6 @@ export default class App extends React.Component<AppProps, AppState> {
           />
         );
       }
-    
-    }
-    if (this.state.currentFrame === "default") {
-      body = (
-        <div>
-          <button onClick={this.switchToFrame1}>Go to Home</button>
-          {/* Render the default page content here */}
-        </div>
-      );
-    } else if (this.state.currentFrame === "Frame1") {
-      body = <Frame1 switchToFrame2={this.switchToFrame1} />;
     }
 
     return (
@@ -228,6 +217,9 @@ export default class App extends React.Component<AppProps, AppState> {
             message={this.state.headerMessage}
           />
           {body}
+          <button onClick={this.switchToFrame1} style={{ position: "fixed", bottom: 0, width: "100%" }}>
+            Go to Home
+          </button>
         </div>
       </div>
     );
