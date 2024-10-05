@@ -51,6 +51,8 @@ export default class App extends React.Component<AppProps, AppState> {
     this.switchToFrame1 = this.switchToFrame1.bind(this);
     this.switchToFrame2 = this.switchToFrame2.bind(this);
     this.switchToFrame3 = this.switchToFrame3.bind(this);
+    this.handleBackClick = this.handleBackClick.bind(this);
+    this.handleForwardClick = this.handleForwardClick.bind(this);
   }
 
   /*
@@ -160,6 +162,28 @@ export default class App extends React.Component<AppProps, AppState> {
     this.setState({ currentFrame: "Frame3" });
   };
 
+  handleBackClick = () => {
+    const { currentFrame } = this.state;
+    if (currentFrame === "Frame1") {
+      this.setState({ currentFrame: "default" });
+    } else if (currentFrame === "Frame2") {
+      this.setState({ currentFrame: "Frame1" });
+    } else if (currentFrame === "Frame3") {
+      this.setState({ currentFrame: "Frame2" });
+    }
+  };
+
+  handleForwardClick = () => { 
+    const { currentFrame } = this.state;
+    if (currentFrame === "default") {
+      this.setState({ currentFrame: "Frame1" });
+    } else if (currentFrame === "Frame1") {
+      this.setState({ currentFrame: "Frame2" });
+    } else if (currentFrame === "Frame2") {
+      this.setState({ currentFrame: "Frame3" });
+    }
+  };
+
   render() {
     const { title, isOfficeInitialized } = this.props;
 
@@ -232,6 +256,8 @@ export default class App extends React.Component<AppProps, AppState> {
             logo="assets/Onedrive_Charts_icon_80x80px.png"
             title={this.props.title}
             message={this.state.headerMessage}
+            onBackClick={this.handleBackClick}
+            onForwardClick={this.handleForwardClick}
           />
           {body}
           <button onClick={this.switchToFrame1} style={{ position: "fixed", bottom: 0, width: "100%" }}>

@@ -128,6 +128,16 @@ h6 {
     border: none;
 }
 
+.ms-welcome__header .ms-Button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+.ms-welcome__header .ms-Button + .ms-Button {
+    left: 50px;
+}
+
 @media (min-width: 0) and (max-width: 350px) {
     .ms-welcome__features {
         width: 100%;
