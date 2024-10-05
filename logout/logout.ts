@@ -31,6 +31,22 @@ async function onMessageFromParent(arg) {
     account: currentAccount,
     postLogoutRedirectUri: `${window.location.origin}/logoutcomplete/logoutcomplete.html`,
   };
+
+  try {
+    // Attempt silent token retrieval
+    const silentResponse = await pca.acquireTokenSilent({
+      scopes: ['user.read', 'files.read.all'],
+      account: currentAccount
+    });
+    console.log('Silent token retrieval successful:', silentResponse);
+  } catch (silentError) {
+    // Silent token retrieval failed, invoke login
+    console.error('Silent token retrieval failed:', silentError);
+    await pca.loginRedirect({
+      scopes: ['user.read', 'files.read.all']
+    });
+  }
+
   await pca.logoutRedirect(logoutRequest);
   const messageObject = { messageType: "dialogClosed" };
   const jsonMessage = JSON.stringify(messageObject);

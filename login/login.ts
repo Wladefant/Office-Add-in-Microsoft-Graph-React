@@ -24,10 +24,19 @@ Office.onReady(async () => {
     if (response) {
       Office.context.ui.messageParent(JSON.stringify({ status: 'success', token: response.accessToken, userName: response.account.username}));
     } else {
-      // A problem occurred, so invoke login.
-      await pca.loginRedirect({
-        scopes: ['user.read', 'files.read.all']
-      });
+      // Attempt silent token retrieval
+      try {
+        const silentResponse = await pca.acquireTokenSilent({
+          scopes: ['user.read', 'files.read.all'],
+          account: pca.getAllAccounts()[0]
+        });
+        Office.context.ui.messageParent(JSON.stringify({ status: 'success', token: silentResponse.accessToken, userName: silentResponse.account.username}));
+      } catch (silentError) {
+        // Silent token retrieval failed, invoke login
+        await pca.loginRedirect({
+          scopes: ['user.read', 'files.read.all']
+        });
+      }
     }
   } catch (error) {
     const errorData = {
@@ -38,4 +47,3 @@ Office.onReady(async () => {
     Office.context.ui.messageParent(JSON.stringify({ status: 'failure', result: errorData }));
   }
 });
-
