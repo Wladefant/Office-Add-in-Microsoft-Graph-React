@@ -91,6 +91,7 @@
                     
                     <!-- Provide a url resource id for the location that will be displayed on the task pane. -->
                     <SourceLocation resid="Contoso.Taskpane.Url" />
+                    <SupportsPinning>true</SupportsPinning>
                   </Action>
                 </Control>
               </Group>
