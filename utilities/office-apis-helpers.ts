@@ -5,29 +5,34 @@ import { AxiosResponse } from 'axios';
      Interacting with the Office document
 */
 
-export const writeFileNamesToWorksheet = async (result: AxiosResponse,
-    displayError: (x: string) => void) => {
-
+export const writeFileNamesToEmail = async (
+    result: AxiosResponse,
+    displayError: (x: string) => void
+  ) => {
     try {
-        await Excel.run((context: Excel.RequestContext) => {
-            const sheet = context.workbook.worksheets.getActiveWorksheet();
-
-            const data = [
-                [result.data.value[0].name],
-                [result.data.value[1].name],
-                [result.data.value[2].name]];
-
-            const range = sheet.getRange('B5:B7');
-            range.values = data;
-            range.format.autofitColumns();
-
-            return context.sync();
-        });
+      const item = Office.context.mailbox.item;
+  
+      // Extract the names from the result
+      const names = result.data.value.slice(0, 3).map((v) => v.name);
+  
+      // Convert names to Markdown list format
+      const markdown = names.map((name) => `- ${name}`).join('\n');
+  
+      // Set the reply body content to the Markdown text
+      item.body.setAsync(
+        markdown,
+        { coercionType: Office.CoercionType.Text },
+        (asyncResult) => {
+          if (asyncResult.status === Office.AsyncResultStatus.Failed) {
+            displayError(asyncResult.error.message);
+          }
+        }
+      );
     } catch (error) {
-        displayError(error.toString());
+      displayError(error.toString());
     }
-};
-
+  };
+  
 /*
     Managing the dialogs.
 */
@@ -156,4 +161,3 @@ const processDialogEvent = (arg: { error: number, type: string },
             break;
     }
 };
-

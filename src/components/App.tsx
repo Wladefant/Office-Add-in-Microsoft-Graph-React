@@ -9,7 +9,7 @@ import SuccessPageBody from "./SuccessPageBody";
 import OfficeAddinMessageBar from "./OfficeAddinMessageBar";
 import { getGraphData } from "../../utilities/microsoft-graph-helpers";
 import {
-  writeFileNamesToWorksheet,
+  writeFileNamesToEmail,
   logoutFromO365,
   signInO365,
 } from "../../utilities/office-apis-helpers";
@@ -61,13 +61,13 @@ export default class App extends React.Component<AppProps, AppState> {
       primaryText: "Connects to OneDrive for Business.",
     },
     {
-      icon: "ExcelDocument",
+      icon: "Mail",
       primaryText:
         "Gets the names of the first three workbooks in OneDrive for Business.",
     },
     {
-      icon: "AddNotes",
-      primaryText: "Adds the names to the current document.",
+      icon: "Reply",
+      primaryText: "Adds the names to the reply of an email.",
     },
   ];
 
@@ -132,7 +132,7 @@ export default class App extends React.Component<AppProps, AppState> {
         "https://graph.microsoft.com/v1.0/me/drive/root/microsoft.graph.search(q = '.xlsx')?$select=name&top=3",
         this.accessToken
       );
-      await writeFileNamesToWorksheet(response, this.displayError);
+      await writeFileNamesToEmail(response, this.displayError);
       this.setState({ fileFetch: "fetched", headerMessage: "Success" });
     } catch (requestError) {
       // This error must be from the Axios request in getGraphData, 
