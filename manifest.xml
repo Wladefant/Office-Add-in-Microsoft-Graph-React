@@ -1,13 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<OfficeApp
-          xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
-          xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
-          xsi:type="MailApp">
-
-  <!-- Begin Basic Settings: Add-in metadata, used for all versions of Office unless override provided. -->
-
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="MailApp">
   <!-- IMPORTANT! Id must be unique for your add-in, if you reuse this manifest ensure that you change this id to a new GUID. -->
   <Id>867f8385-2825-423d-a962-cde3417d5084</Id>
 
@@ -21,63 +16,68 @@
 
   <!-- Icon for your add-in. Used on installation screens and the add-ins dialog. -->
   <IconUrl DefaultValue="https://localhost:3000/assets/Onedrive_Charts_icon_32x32px.png" />
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/hi-res-icon.png"/>
-
-  <!--If you plan to submit this add-in to the Office Store, uncomment the SupportUrl element below-->
-  <!--<SupportUrl DefaultValue="[Insert the URL of a page that provides support information for the app]">-->
-
-  <!-- Domains that will be allowed when navigating. For example, if you use ShowTaskpane and then have an href link, navigation will only be allowed if the domain is on this list. -->
+  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/hi-res-icon.png"/>  <SupportUrl DefaultValue="https://www.contoso.com/help"/>
   <AppDomains>
-    <AppDomain>AppDomain1</AppDomain>
-    <AppDomain>AppDomain2</AppDomain>
-    <AppDomain>AppDomain3</AppDomain>
+    <AppDomain>https://localhost:3000</AppDomain>
   </AppDomains>
-  <!--End Basic Settings. -->
-
-  <!--Begin Mail Integration. This section defines how your add-in integrates with Outlook. -->
   <Hosts>
-    <Host Name="Mailbox" />
+    <Host Name="Mailbox"/>
   </Hosts>
-
   <Requirements>
-    <Sets DefaultMinVersion="1.1">
-      <Set Name="Mailbox" />
+    <Sets>
+      <Set Name="Mailbox" MinVersion="1.1"/>
     </Sets>
   </Requirements>
-
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
         <SourceLocation DefaultValue="https://localhost:3000/index.html" />
-      </DesktopSettings>
-    </Form>
-    <Form xsi:type="ItemEdit">
-      <DesktopSettings>
-        <SourceLocation DefaultValue="https://localhost:3000/index.html" />
+        <RequestedHeight>250</RequestedHeight>
       </DesktopSettings>
     </Form>
   </FormSettings>
-
   <Permissions>ReadWriteMailbox</Permissions>
-
-  <!-- Begin Add-in Commands Mode integration. -->
-  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
-
-    <!-- The Hosts node is required. -->
-    <Hosts>
-      <!-- For Outlook, use Mailbox as the host type. -->
-      <Host xsi:type="Mailbox">
-        <DesktopFormFactor>
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+    <Rule xsi:type="ItemIs" ItemType="Appointment" FormType="Read"/>
+  </Rule>
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1" xsi:type="VersionOverridesV1_1">
+      <Requirements>
+        <bt:Sets DefaultMinVersion="1.12">
+          <bt:Set Name="Mailbox"/>
+        </bt:Sets>
+      </Requirements>
+      <Hosts>
+        <Host xsi:type="MailHost">
+          
+          <DesktopFormFactor>
+          <!--"This code enables a customizable message to be displayed when the add-in is loaded successfully upon individual install."-->
+        
+          <!-- Function file is a HTML page that includes the JavaScript where functions for ExecuteAction will be called.
+            Think of the FunctionFile as the code behind ExecuteFunction. -->
           <FunctionFile resid="Contoso.DesktopFunctionFile.Url" />
 
+          <!-- PrimaryCommandSurface is the main Office Ribbon. -->
           <ExtensionPoint xsi:type="MessageReadCommandSurface">
-            <OfficeTab id="TabDefault">
+            <!-- Use OfficeTab to extend an existing Tab. Use CustomTab to create a new tab. -->
+            <OfficeTab id="TabHome">
+              <!-- Ensure you provide a unique id for the group. Recommendation for any IDs is to namespace using your company name. -->
               <Group id="Contoso.Group1">
+                <!-- Label for your group. resid must point to a ShortString resource. -->
                 <Label resid="Contoso.Group1Label" />
+                <!-- Icons. Required sizes 16,32,80, optional 20, 24, 40, 48, 64. Strongly recommended to provide all sizes for great UX. -->
+                <!-- Use PNG icons. All URLs on the resources section must use HTTPS. -->
+                
+
+                <!-- Control. It can be of type "Button" or "Menu". -->
                 <Control xsi:type="Button" id="Contoso.TaskpaneButton">
                   <Label resid="Contoso.TaskpaneButton.Label" />
                   <Supertip>
+                    <!-- ToolTip title. resid must point to a ShortString resource. -->
                     <Title resid="Contoso.TaskpaneButton.Label" />
+                    <!-- ToolTip description. resid must point to a LongString resource. -->
                     <Description resid="Contoso.TaskpaneButton.Tooltip" />
                   </Supertip>
                   <Icon>
@@ -85,7 +85,11 @@
                     <bt:Image size="32" resid="Contoso.tpicon_32x32" />
                     <bt:Image size="80" resid="Contoso.tpicon_80x80" />
                   </Icon>
+
+                  <!-- This is what happens when the command is triggered (E.g. click on the Ribbon). Supported actions are ExecuteFunction or ShowTaskpane. -->
                   <Action xsi:type="ShowTaskpane">
+                    
+                    <!-- Provide a url resource id for the location that will be displayed on the task pane. -->
                     <SourceLocation resid="Contoso.Taskpane.Url" />
                   </Action>
                 </Control>
@@ -96,6 +100,7 @@
       </Host>
     </Hosts>
 
+    <!-- You can use resources across hosts and form factors. -->
     <Resources>
       <bt:Images>
         <bt:Image id="Contoso.tpicon_16x16" DefaultValue="https://localhost:3000/assets/Onedrive_Charts_icon_16x16px.png" />
@@ -107,11 +112,13 @@
         <bt:Url id="Contoso.GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812" />
         <bt:Url id="Contoso.DesktopFunctionFile.Url" DefaultValue="https://localhost:3000/function-file/function-file.html" />
       </bt:Urls>
+      <!-- ShortStrings max characters==125. -->
       <bt:ShortStrings>
         <bt:String id="Contoso.TaskpaneButton.Label" DefaultValue="Open Add-in" />
         <bt:String id="Contoso.Group1Label" DefaultValue="OneDrive Files" />
         <bt:String id="Contoso.GetStarted.Title" DefaultValue="Microsoft Graph data add-in has loaded successfully." />
       </bt:ShortStrings>
+      <!-- LongStrings max characters==250. -->
       <bt:LongStrings>
         <bt:String id="Contoso.TaskpaneButton.Tooltip" DefaultValue="Get files stored on OneDrive" />
         <bt:String id="Contoso.GetStarted.Description" DefaultValue="Choose Open Add-in, then Connect to Office 365 to get started." />
@@ -119,5 +126,5 @@
     </Resources>
   </VersionOverrides>
   <!-- End Add-in Commands Mode integration. -->
-
+</VersionOverrides>
 </OfficeApp>

@@ -3,20 +3,18 @@ page_type: sample
 urlFragment: office-add-in-auth-graph-react
 products:
   - office
-  - office-excel
-  - office-powerpoint
-  - office-word
+  - office-outlook
   - ms-graph
 languages:
   - javascript
-description: Learn how to build a Microsoft Office Add-in, as a single-page application with no backend, that connects to Microsoft Graph, finds the first three workbooks stored in OneDrive for Business, fetches their filenames, and inserts the names into an Office document using Office.js.
+description: Learn how to build a Microsoft Office Add-in, as a single-page application with no backend, that connects to Microsoft Graph, finds the first three workbooks stored in OneDrive for Business, fetches their filenames, and inserts the names into an email reply using Office.js.
 extensions:
   contentType: samples
   technologies:
     - Add-ins
     - Microsoft Graph
   services:
-    - Excel
+    - Outlook
     - Microsoft 365
   createdDate: 5/1/2017 2:09:09 PM
 ---
@@ -24,7 +22,7 @@ extensions:
 
 ## Summary
 
-Learn how to build a Microsoft Office Add-in, as a single-page application (SPA) with no backend, that connects to Microsoft Graph, finds the first three workbooks stored in OneDrive for Business, fetches their filenames, and inserts the names into an Office document using Office.js.
+Learn how to build a Microsoft Office Add-in, as a single-page application (SPA) with no backend, that connects to Microsoft Graph, finds the first three workbooks stored in OneDrive for Business, fetches their filenames, and inserts the names into an email reply using Office.js.
 
 ## Features
 
@@ -39,7 +37,7 @@ Integrating data from online service providers increases the value and adoption 
 
 ## Applies to
 
-* Excel on Windows (one-time purchase and subscription)
+* Outlook on Windows (one-time purchase and subscription)
 
 ## Prerequisites
 
@@ -84,7 +82,7 @@ Version  | Date | Comments
 1. Sign in with the ***admin*** credentials to your Microsoft 365 tenancy. For example, MyName@contoso.onmicrosoft.com.
 1. Select **New registration**. On the **Register an application** page, set the values as follows.
 
-    * Set **Name** to `ExcelGraphDemo`.
+    * Set **Name** to `OutlookGraphDemo`.
     * Set **Supported account types** to **Accounts in any organizational directory (Any Microsoft Entra ID tenant - Multitenant) and personal Microsoft accounts (e.g. Skype, Xbox)**.
     * In the **Redirect URI** section, ensure that **Single-page application (SPA)** is selected in the drop down and then set the URI to `https://localhost:3000/login/login.html`.
     * Select **Register**.
@@ -93,7 +91,7 @@ Version  | Date | Comments
 
     > Note: The sample uses the OAuth 2.0 Auth Code Flow w/ PKCE for SPAs, which requires no secrets.
 
-1. On the **ExcelGraphDemo** page, copy and save the value for the **Application (client) ID**. You'll use it in the next section.
+1. On the **OutlookGraphDemo** page, copy and save the value for the **Application (client) ID**. You'll use it in the next section.
 
 ### Configure the sample
 
@@ -113,7 +111,7 @@ Version  | Date | Comments
 ### Run the solution
 
 1. In the command prompt, run the command `start npm start`. This will open a second command prompt, build the project and then start a server (with dev mode settings). It takes from 5 to 30 seconds. When it finishes, the last line should say `Compiled successfully`. Minimize this command prompt.
-1. Back in the original command prompt, run the command `npm run sideload`. This will launch Excel and install the add-in in it. After a few seconds, a **OneDrive Files** group appears on the right end of the **Home** ribbon with a button named **Open Add-in**.
+1. Back in the original command prompt, run the command `npm run sideload`. This will launch Outlook and install the add-in in it. After a few seconds, a **OneDrive Files** group appears on the right end of the **Home** ribbon with a button named **Open Add-in**.
 1. Click the **Open Add-in** to open the task pane add-in.
 1. The pages and buttons in the add-in are self-explanatory. 
 
