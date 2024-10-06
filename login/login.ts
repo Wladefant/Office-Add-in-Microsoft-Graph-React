@@ -27,14 +27,14 @@ Office.onReady(async () => {
       // Attempt silent token retrieval
       try {
         const silentResponse = await pca.acquireTokenSilent({
-          scopes: ['user.read', 'files.read.all'],
+          scopes: ['user.read', 'files.read.all', 'Mail.ReadWrite'],
           account: pca.getAllAccounts()[0]
         });
         Office.context.ui.messageParent(JSON.stringify({ status: 'success', token: silentResponse.accessToken, userName: silentResponse.account.username}));
       } catch (silentError) {
         // Silent token retrieval failed, invoke login
         await pca.loginRedirect({
-          scopes: ['user.read', 'files.read.all']
+          scopes: ['user.read', 'files.read.all', 'Mail.ReadWrite']
         });
       }
     }

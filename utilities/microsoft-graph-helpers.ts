@@ -26,7 +26,7 @@ export const createMailFolder = async (accesstoken: string) => {
     console.log('Mail folder created successfully:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error creating mail folder:', error);
+    console.error('Error creating mail folder:',  error);
     throw error;
   }
 };
