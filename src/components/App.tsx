@@ -7,7 +7,7 @@ import StartPageBody from "./StartPageBody";
 import GetDataPageBody from "./GetDataPageBody";
 import SuccessPageBody from "./SuccessPageBody";
 import OfficeAddinMessageBar from "./OfficeAddinMessageBar";
-import { getGraphData } from "../../utilities/microsoft-graph-helpers";
+import { getGraphData, createMailFolder } from "../../utilities/microsoft-graph-helpers";
 import {
   writeFileNamesToEmail,
   logoutFromO365,
@@ -51,6 +51,7 @@ export default class App extends React.Component<AppProps, AppState> {
     this.switchToFrame1 = this.switchToFrame1.bind(this);
     this.switchToFrame2 = this.switchToFrame2.bind(this);
     this.switchToFrame3 = this.switchToFrame3.bind(this);
+    this.createTestMailFolder = this.createTestMailFolder.bind(this);
   }
 
   /*
@@ -148,6 +149,20 @@ export default class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  createTestMailFolder = async () => {
+    if (!this.accessToken) {
+      this.displayError('Access token is not set.');
+      return;
+    }
+
+    try {
+      const response = await createMailFolder(this.accessToken);
+      console.log('Mail folder created:', response);
+    } catch (error) {
+      this.displayError('Failed to create mail folder.');
+    }
+  };
+
   switchToFrame1 = () => {
     this.setState({ currentFrame: "Frame1" });
   };
@@ -162,7 +177,7 @@ export default class App extends React.Component<AppProps, AppState> {
 
   render() {
     const { title, isOfficeInitialized } = this.props;
-
+ 
     if (!isOfficeInitialized) {
       return (
         <Progress
@@ -198,6 +213,7 @@ export default class App extends React.Component<AppProps, AppState> {
           <GetDataPageBody
             getFileNames={this.getFileNames}
             logout={this.logout}
+            createTestMailFolder={this.createTestMailFolder}
           />
         );
       } else if (this.state.fileFetch === "fetchInProcess") {
