@@ -206,6 +206,17 @@ app.get('/createFamilyItem', async (req, res) => {
   }
 });
 
+// Define the endpoint that triggers deleteFamilyItem
+app.get('/deleteFamilyItem', async (req, res) => {
+  try {
+    await deleteFamilyItem(config.items.Andersen);
+    res.status(200).send('Family deleted successfully.');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error deleting Family.');
+  }
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
