@@ -53,6 +53,7 @@ export default class App extends React.Component<AppProps, AppState> {
     this.switchToFrame2 = this.switchToFrame2.bind(this);
     this.switchToFrame3 = this.switchToFrame3.bind(this);
     this.deleteFamilyItem = this.deleteFamilyItem.bind(this); // P0312
+    this.queryContainer = this.queryContainer.bind(this); // P7a8a
     // No need to bind createDatabase since it's an arrow function
   }
 
@@ -193,6 +194,20 @@ export default class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  // New method to call the backend endpoint and trigger queryContainer
+  queryContainer = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/queryContainer');
+      const text = await response.text();
+      console.log(text);
+      // Optionally update state or display a success message
+      this.setState({ headerMessage: "Query executed successfully." });
+    } catch (error) {
+      console.error('Error executing query:', error);
+      this.displayError('Error executing query.');
+    }
+  };
+
   switchToFrame1 = () => {
     this.setState({ currentFrame: "Frame1" });
   };
@@ -246,6 +261,7 @@ export default class App extends React.Component<AppProps, AppState> {
             createTestMailFolder={this.createTestMailFolder}
             createFamilyItem={this.createFamilyItem} // Pass the createDatabase method
             deleteFamilyItem={this.deleteFamilyItem} // P0312
+            queryContainer={this.queryContainer} // P7a8a
           />
         );
       } else if (this.state.fileFetch === "fetchInProcess") {
