@@ -192,7 +192,7 @@ export default class App extends React.Component<AppProps, AppState> {
     let body;
 
     if (this.state.currentFrame === "Frame1") {
-      body = <Frame1 switchToFrame2={this.switchToFrame2} />;
+      body = <Frame1 switchToFrame2={this.switchToFrame2} displayError={this.displayError} accessToken={this.accessToken} />;
     } else if (this.state.currentFrame === "Frame2") {
       body = <Frame2 switchToFrame3={this.switchToFrame3} createTestMailFolder={this.createTestMailFolder} />;
     } else if (this.state.currentFrame === "Frame3") {
