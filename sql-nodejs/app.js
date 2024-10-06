@@ -1,4 +1,11 @@
-//@ts-check
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const port = process.env.PORT || 3001;
+
+// Enable CORS
+app.use(cors());
+
 const CosmosClient = require('@azure/cosmos').CosmosClient
 
 const config = require('./config')
@@ -188,20 +195,18 @@ function exit(message) {
   process.stdin.on('data', process.exit.bind(process, 0))
 }
 
-createDatabase()
-  .then(() => readDatabase())
-  .then(() => createContainer())
-  .then(() => readContainer())
-  .then(() => scaleContainer())
-  .then(() => createFamilyItem(config.items.Andersen))
-  .then(() => createFamilyItem(config.items.Wakefield))
-  .then(() => queryContainer())
-  .then(() => replaceFamilyItem(config.items.Andersen))
-  .then(() => queryContainer())
-  .then(() => deleteFamilyItem(config.items.Andersen))
-  .then(() => {
-    exit(`Completed successfully`)
-  })
-  .catch(error => {
-    exit(`Completed with error ${JSON.stringify(error)}`)
-  })
+// Define the endpoint that triggers createDatabase
+app.get('/createFamilyItem', async (req, res) => {
+  try {
+    await createFamilyItem(config.items.Andersen);
+    res.status(200).send('Family added successfully.');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error adding Family.');
+  }
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
