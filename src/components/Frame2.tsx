@@ -13,9 +13,10 @@ import OPENAI_API_KEY from "../../config/openaiKey";
 
 interface Frame2Props {
   switchToFrame3: () => void;
+  createTestMailFolder: () => void;
 }
 
-const Frame2: React.FC<Frame2Props> = ({ switchToFrame3 }) => {
+const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder }) => {
   // State for the dynamic values
   const [propertyName, setPropertyName] = useState("Immobilie XXX");
   const [requestsInfo, setRequestsInfo] = useState("XXX der XXX Anfragen treffen auf die Profilbeschreibung zu");
@@ -141,7 +142,10 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3 }) => {
         <Button
           appearance="primary"
           style={{ width: "100%" }}
-          onClick={switchToFrame3}
+          onClick={() => {
+            createTestMailFolder();
+            switchToFrame3();
+          }}
         >
           Drafts erstellen
         </Button>

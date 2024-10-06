@@ -177,7 +177,7 @@ export default class App extends React.Component<AppProps, AppState> {
 
   render() {
     const { title, isOfficeInitialized } = this.props;
- 
+  
     if (!isOfficeInitialized) {
       return (
         <Progress
@@ -194,7 +194,7 @@ export default class App extends React.Component<AppProps, AppState> {
     if (this.state.currentFrame === "Frame1") {
       body = <Frame1 switchToFrame2={this.switchToFrame2} />;
     } else if (this.state.currentFrame === "Frame2") {
-      body = <Frame2 switchToFrame3={this.switchToFrame3}/>;
+      body = <Frame2 switchToFrame3={this.switchToFrame3} createTestMailFolder={this.createTestMailFolder} />;
     } else if (this.state.currentFrame === "Frame3") {
       body = <Frame3 />;
     } else if (this.state.authStatus === "notLoggedIn") {
