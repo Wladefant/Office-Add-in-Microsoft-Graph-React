@@ -40,18 +40,19 @@ export default class App extends React.Component<AppProps, AppState> {
       currentFrame: "default",
     };
 
-    // Bind the methods that we want to pass to, and call in, a separate
-    // module to this component. And rename setState to boundSetState
-    // so code that passes boundSetState is more self-documenting.
+    // Bind methods to the class instance
     this.boundSetState = this.setState.bind(this);
     this.setToken = this.setToken.bind(this);
     this.setUserName = this.setUserName.bind(this);
     this.displayError = this.displayError.bind(this);
     this.login = this.login.bind(this);
+    this.logout = this.logout.bind(this);
+    this.getFileNames = this.getFileNames.bind(this);
+    this.createTestMailFolder = this.createTestMailFolder.bind(this);
     this.switchToFrame1 = this.switchToFrame1.bind(this);
     this.switchToFrame2 = this.switchToFrame2.bind(this);
     this.switchToFrame3 = this.switchToFrame3.bind(this);
-    this.createTestMailFolder = this.createTestMailFolder.bind(this);
+    // No need to bind createDatabase since it's an arrow function
   }
 
   /*
@@ -163,6 +164,20 @@ export default class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  // New method to call the backend endpoint and trigger createFamilyItem
+  createFamilyItem = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/createFamilyItem');
+      const text = await response.text();
+      console.log(text);
+      // Optionally update state or display a success message
+      this.setState({ headerMessage: "Family addded successfully." });
+    } catch (error) {
+      console.error('Error adding Family:', error);
+      this.displayError('Error adding family.');
+    }
+  };
+
   switchToFrame1 = () => {
     this.setState({ currentFrame: "Frame1" });
   };
@@ -214,6 +229,7 @@ export default class App extends React.Component<AppProps, AppState> {
             getFileNames={this.getFileNames}
             logout={this.logout}
             createTestMailFolder={this.createTestMailFolder}
+            createFamilyItem={this.createFamilyItem} // Pass the createDatabase method
           />
         );
       } else if (this.state.fileFetch === "fetchInProcess") {
