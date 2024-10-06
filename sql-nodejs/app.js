@@ -217,6 +217,17 @@ app.get('/deleteFamilyItem', async (req, res) => {
   }
 });
 
+// Define the endpoint that triggers queryContainer
+app.get('/queryContainer', async (req, res) => {
+  try {
+    await queryContainer();
+    res.status(200).send('Query executed successfully.');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error executing query.');
+  }
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
