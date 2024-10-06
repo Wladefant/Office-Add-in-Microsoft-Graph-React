@@ -52,6 +52,7 @@ export default class App extends React.Component<AppProps, AppState> {
     this.switchToFrame1 = this.switchToFrame1.bind(this);
     this.switchToFrame2 = this.switchToFrame2.bind(this);
     this.switchToFrame3 = this.switchToFrame3.bind(this);
+    this.deleteFamilyItem = this.deleteFamilyItem.bind(this); // P0312
     // No need to bind createDatabase since it's an arrow function
   }
 
@@ -178,6 +179,20 @@ export default class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  // New method to call the backend endpoint and trigger deleteFamilyItem
+  deleteFamilyItem = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/deleteFamilyItem');
+      const text = await response.text();
+      console.log(text);
+      // Optionally update state or display a success message
+      this.setState({ headerMessage: "Family deleted successfully." });
+    } catch (error) {
+      console.error('Error deleting Family:', error);
+      this.displayError('Error deleting family.');
+    }
+  };
+
   switchToFrame1 = () => {
     this.setState({ currentFrame: "Frame1" });
   };
@@ -230,6 +245,7 @@ export default class App extends React.Component<AppProps, AppState> {
             logout={this.logout}
             createTestMailFolder={this.createTestMailFolder}
             createFamilyItem={this.createFamilyItem} // Pass the createDatabase method
+            deleteFamilyItem={this.deleteFamilyItem} // P0312
           />
         );
       } else if (this.state.fileFetch === "fetchInProcess") {

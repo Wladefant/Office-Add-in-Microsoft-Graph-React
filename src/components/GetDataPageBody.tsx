@@ -6,11 +6,12 @@ export interface GetDataPageBodyProps {
   logout: () => {};
   createTestMailFolder: () => {};
   createFamilyItem: () => {}; // Add this line
+  deleteFamilyItem: () => {}; // Pa152
 }
 
 export default class GetDataPageBody extends React.Component<GetDataPageBodyProps> {
   render() {
-    const { getFileNames, logout, createTestMailFolder, createFamilyItem } = this.props;
+    const { getFileNames, logout, createTestMailFolder, createFamilyItem, deleteFamilyItem } = this.props;
 
     return (
       <div className='ms-welcome__main'>
@@ -45,7 +46,7 @@ export default class GetDataPageBody extends React.Component<GetDataPageBodyProp
           className='ms-welcome__action'
           buttonType={ButtonType.hero}
           iconProps={{ iconName: 'ChevronRight' }}
-          onClick={() => console.log('Remove from DB')}
+          onClick={deleteFamilyItem} // P50e8
         >
           Remove from DB
         </Button>
