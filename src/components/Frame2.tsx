@@ -101,7 +101,6 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
         {/* Property Information */}
         <MarkdownCard markdown={`**${propertyName}**`} />
         <MarkdownCard markdown={requestsInfo} />
-        <MarkdownCard markdown={requestsInfo} />
 
         {/* Top Results */}
         <Text style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "10px" }}>
