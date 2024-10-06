@@ -16,6 +16,9 @@ export default class GetDataPageBody extends React.Component<GetDataPageBodyProp
                 <h2 className='ms-font-xl ms-fontWeight-semilight ms-fontColor-neutralPrimary ms-u-slideUpIn20'>You can add data from Microsoft Graph to the reply of an email on this page.</h2>
                 <Button className='ms-welcome__action' buttonType={ButtonType.hero} iconProps={{ iconName: 'ChevronRight' }} onClick={getFileNames}>Get File Names</Button>
                 <Button className='ms-welcome__action' buttonType={ButtonType.hero} iconProps={{ iconName: 'ChevronRight' }} onClick={createTestMailFolder}>Create Test Mail Folder</Button>
+                <Button className='ms-welcome__action' buttonType={ButtonType.hero} iconProps={{ iconName: 'ChevronRight' }} onClick={() => console.log('Create in DB')}>Create in DB</Button>
+                <Button className='ms-welcome__action' buttonType={ButtonType.hero} iconProps={{ iconName: 'ChevronRight' }} onClick={() => console.log('Remove from DB')}>Remove from DB</Button>
+                <Button className='ms-welcome__action' buttonType={ButtonType.hero} iconProps={{ iconName: 'ChevronRight' }} onClick={() => console.log('Read from DB')}>Read from DB</Button>
                 <Button className='ms-welcome__action' buttonType={ButtonType.hero} iconProps={{ iconName: 'ChevronRight' }} onClick={logout}>Sign out from Office 365</Button>
             </div>
         );
