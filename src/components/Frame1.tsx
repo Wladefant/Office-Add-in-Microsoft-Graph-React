@@ -8,14 +8,17 @@ import {
 } from "@fluentui/react-components";
 import { Text } from "@fluentui/react";
 import { Configuration, OpenAIApi } from "openai";
+import axios from 'axios';
 import OPENAI_API_KEY from "../../config/openaiKey";
 import MarkdownCard from "./MarkdownCard";
 
 interface Frame1Props {
   switchToFrame2: () => void;
+  displayError: (error: string) => void;
+  accessToken: string;
 }
 
-const Frame1: React.FC<Frame1Props> = ({ switchToFrame2 }) => {
+const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessToken }) => {
   const [location, setLocation] = useState("xxx");
   const [requests, setRequests] = useState("XXX");
   const [perfectCustomerProfile, setPerfectCustomerProfile] = useState("");
@@ -85,6 +88,19 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2 }) => {
   };
   
 
+  const handleAnalyseClick = async () => {
+    try {
+      const response = await axios.get("https://graph.microsoft.com/v1.0/me/messages?$filter=from/emailAddress/address eq 'Learn@notifications.microsoft.com'", {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      displayError(JSON.stringify(response.data));
+    } catch (error) {
+      displayError(error.toString());
+    }
+  };
+
   useEffect(() => {
     const fetchEmailContent = async () => {
       if (Office.context.mailbox.item) {
@@ -146,7 +162,10 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2 }) => {
         <Button
           appearance="primary"
           style={{ width: "100%" }}
-          onClick={switchToFrame2}
+          onClick={() => {
+            handleAnalyseClick();
+            switchToFrame2();
+          }}
         >
           Analyse durchführen
         </Button>
