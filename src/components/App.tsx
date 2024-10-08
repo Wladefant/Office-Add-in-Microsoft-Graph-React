@@ -169,7 +169,7 @@ export default class App extends React.Component<AppProps, AppState> {
   // New method to call the backend endpoint and trigger createFamilyItem
   createFamilyItem = async () => {
     try {
-      const response = await fetch('http://localhost:3001/createFamilyItem');
+      const response = await fetch('https://cosmosdbbackendplugin.azurewebsites.net/createFamilyItem');
       const text = await response.text();
       console.log(text);
       // Optionally update state or display a success message
@@ -183,7 +183,7 @@ export default class App extends React.Component<AppProps, AppState> {
   // New method to call the backend endpoint and trigger deleteFamilyItem
   deleteFamilyItem = async () => {
     try {
-      const response = await fetch('http://localhost:3001/deleteFamilyItem');
+      const response = await fetch('https://cosmosdbbackendplugin.azurewebsites.net/deleteFamilyItem');
       const text = await response.text();
       console.log(text);
       // Optionally update state or display a success message
@@ -197,7 +197,7 @@ export default class App extends React.Component<AppProps, AppState> {
   // New method to call the backend endpoint and trigger queryContainer
   queryContainer = async () => {
     try {
-      const response = await fetch('http://localhost:3001/queryContainer');
+      const response = await fetch('https://cosmosdbbackendplugin.azurewebsites.net/queryContainer');
       const text = await response.text();
       console.log(text);
       // Optionally update state or display a success message
