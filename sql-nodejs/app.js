@@ -7,17 +7,19 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json()); // Add this line to parse JSON request bodies
 
-const CosmosClient = require('@azure/cosmos').CosmosClient
+const CosmosClient = require('@azure/cosmos').CosmosClient; // Import CosmosClient
+const { Configuration, OpenAIApi } = require('openai'); // Import OpenAI
+
 
 const config = require('./config')
-const url = require('url')
 
 const endpoint = config.endpoint
 const key = config.key
 
 const databaseId = config.database.id
 const containerId = config.container.id
-const partitionKey = { kind: 'Hash', paths: ['/partitionKey'] }
+const emailsContainerId = config.container.emails.id; // Use the correct container ID
+const partitionKey = { kind: 'Hash', paths: ['/userId'] };
 
 const options = {
       endpoint: endpoint,
@@ -27,6 +29,46 @@ const options = {
 
 const client = new CosmosClient(options)
 
+// Initialize OpenAI
+const openaiConfiguration = new Configuration({
+  apiKey: '', // Replace with your OpenAI API key
+});
+const openai = new OpenAIApi(openaiConfiguration);
+
+
+
+// Function to extract location using OpenAI
+async function extractLocation(emailContent) {
+  try {
+    const prompt = `Bestimme den Ort aus dem folgenden E-Mail-Inhalt und gib als Output nur die Adresse wieder. Falls nicht gefunden, schreibe "nicht gefunden". E-Mail-Inhalt: ${emailContent}`;
+
+    const response = await openai.createChatCompletion({
+      model: 'gpt-4o', // Use 'gpt-4' if available and needed
+      messages: [
+        {
+          role: 'system',
+          content: 'Du bist ein hilfreicher Assistent, der den Ort aus E-Mail-Inhalten extrahiert.',
+        },
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ],
+      max_tokens: 50,
+      n: 1,
+      temperature: 0.7,
+    });
+
+    if (response.data.choices && response.data.choices.length > 0) {
+      return response.data.choices[0].message.content.trim();
+    } else {
+      return 'nicht gefunden';
+    }
+  } catch (error) {
+    console.error('Error extracting location:', error);
+    return 'nicht gefunden';
+  }
+}
 /**
  * Create the database if it does not exist
  */
@@ -261,9 +303,28 @@ app.get('/checkEmail', async (req, res) => {
 
 // Define the endpoint that uploads an email to CosmosDB
 app.post('/uploadEmail', async (req, res) => {
-  const emailData = req.body;
-  await client.database(databaseId).container('Emails').items.create(emailData);
-  res.status(201).send('Email uploaded successfully.');
+  const emailData = req.body; 
+  try {
+    // Check if 'location' already exists in the email data
+    if (!emailData.location || emailData.location === '') {
+      // Extract 'location' from 'emailBody' using OpenAI
+      const location = await extractLocation(emailData.emailBody);
+
+      // Add 'location' to the email data
+      emailData.location = location;
+    }
+
+    // Save the email data to the 'Emails' container
+    await client
+      .database(databaseId)
+      .container(emailsContainerId)
+      .items.create(emailData);
+
+    res.status(201).send('Email uploaded successfully with location.');
+  } catch (error) {
+    console.error('Error uploading email:', error);
+    res.status(500).send('Error uploading email.');
+  }
 });
 
 // Start the server
