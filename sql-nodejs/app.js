@@ -5,6 +5,7 @@ const port = process.env.PORT || 3001;
 
 // Enable CORS
 app.use(cors());
+app.use(express.json()); // Add this line to parse JSON request bodies
 
 const CosmosClient = require('@azure/cosmos').CosmosClient
 
@@ -226,6 +227,25 @@ app.get('/queryContainer', async (req, res) => {
     console.error(error);
     res.status(500).send('Error executing query.');
   }
+});
+
+// Define the endpoint that checks if a user exists
+app.get('/checkUser', async (req, res) => {
+  const email = req.query.email;
+  const querySpec = {
+    query: 'SELECT * FROM c WHERE c.email = @email',
+    parameters: [{ name: '@email', value: email }],
+  };
+  const { resources: users } = await client.database(databaseId).container('Users').items.query(querySpec).fetchAll();
+  res.status(200).json({ exists: users.length > 0 });
+});
+
+// Define the endpoint that creates a new user
+app.post('/createUser', async (req, res) => {
+  const { email } = req.body;
+  const newUser = { email, id: email };
+  await client.database(databaseId).container('Users').items.create(newUser);
+  res.status(201).send('User created successfully.');
 });
 
 // Start the server
