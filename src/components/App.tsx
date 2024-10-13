@@ -213,10 +213,10 @@ export default class App extends React.Component<AppProps, AppState> {
   checkInboxEmail = async () => {
     try {
       const response = await getGraphData(
-        "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$select=from",
+        "https://graph.microsoft.com/v1.0/me",
         this.accessToken
       );
-      const emailAddress = response.data.value[0].from.emailAddress.address;
+      const emailAddress = response.data.mail;
       this.checkAndCreateUser(emailAddress);
     } catch (error) {
       this.displayError('Failed to get inbox email address.');
