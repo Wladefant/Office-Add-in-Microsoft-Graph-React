@@ -4,14 +4,14 @@
   xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
   xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="MailApp">
   <!-- IMPORTANT! Id must be unique for your add-in, if you reuse this manifest ensure that you change this id to a new GUID. -->
-  <Id>867f8385-2825-423d-a962-cde3417d5084</Id>
+  <Id>867f8385-2825-423d-a962-cde3417d5087</Id>
 
   <!--Version. Updates from the store only get triggered if there is a version change. -->
   <Version>1.0.0.0</Version>
   <ProviderName>Office Developer Education Team</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <!-- The display name of your add-in. Used on the store and various places of the Office UI such as the add-ins dialog. -->
-  <DisplayName DefaultValue="Microsoft Graph Data" />
+  <DisplayName DefaultValue="Local Microsoft Graph Data" />
   <Description DefaultValue="Uses Implicit Flow to get an access token to Microsoft Graph and then gets some Graph data."/>
 
   <!-- Icon for your add-in. Used on installation screens and the add-ins dialog. -->
