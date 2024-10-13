@@ -103,14 +103,14 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
         <MarkdownCard markdown={requestsInfo} />
 
         {/* Top Results */}
-        <Text style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "10px" }}>
+        {/* <Text style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "10px" }}>
           Top XXX Treffer:
         </Text>
         <div style={{ marginBottom: "20px" }}>
           {topResults.map((result, index) => (
             <MarkdownCard key={index} markdown={`**${result.name}**\n\n${result.platform}\n\n${result.description}`} />
           ))}
-        </div>
+        </div> */}
         <MarkdownCard markdown={customerProfile} />
 
         
