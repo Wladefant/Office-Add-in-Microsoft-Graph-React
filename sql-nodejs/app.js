@@ -248,6 +248,24 @@ app.post('/createUser', async (req, res) => {
   res.status(201).send('User created successfully.');
 });
 
+// Define the endpoint that checks if an email exists in CosmosDB based on outlookEmailId
+app.get('/checkEmail', async (req, res) => {
+  const outlookEmailId = req.query.outlookEmailId;
+  const querySpec = {
+    query: 'SELECT * FROM c WHERE c.outlookEmailId = @outlookEmailId',
+    parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
+  };
+  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  res.status(200).json({ exists: emails.length > 0 });
+});
+
+// Define the endpoint that uploads an email to CosmosDB
+app.post('/uploadEmail', async (req, res) => {
+  const emailData = req.body;
+  await client.database(databaseId).container('Emails').items.create(emailData);
+  res.status(201).send('Email uploaded successfully.');
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

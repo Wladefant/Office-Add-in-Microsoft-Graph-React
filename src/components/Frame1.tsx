@@ -87,15 +87,62 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     }
   };
   
+  const checkEmailExistsInCosmosDB = async (outlookEmailId: string) => {
+    try {
+      const response = await fetch(`https://cosmosdbbackendplugin.azurewebsites.net/checkEmail?outlookEmailId=${outlookEmailId}`);
+      const result = await response.json();
+      return result.exists;
+    } catch (error) {
+      console.error('Error checking email existence in CosmosDB:', error);
+      return false;
+    }
+  };
+
+  const uploadEmailToCosmosDB = async (emailData: any) => {
+    try {
+      const response = await fetch('https://cosmosdbbackendplugin.azurewebsites.net/uploadEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to upload email to CosmosDB');
+      }
+  
+      const data = await response.json();
+      console.log('Email uploaded successfully:', data);
+    } catch (error) {
+      console.error('Error uploading email to server:', error);
+    }
+  };
 
   const handleAnalyseClick = async () => {
     try {
-      const response = await axios.get("https://graph.microsoft.com/v1.0/me/messages?$filter=from/emailAddress/address eq 'Learn@notifications.microsoft.com'", {
+      const response = await axios.get("https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$filter=from/emailAddress/address eq 'w.kirjanovs@realest-ai.com'", {
         headers: {
           'Authorization': `Bearer ${accessToken}`
         }
       });
-      displayError(JSON.stringify(response.data));
+      
+      const emails = response.data.value;
+      for (const email of emails) {
+        const emailExists = await checkEmailExistsInCosmosDB(email.id);
+        if (!emailExists) {
+          const emailData = {
+            emailBody: email.body.content,
+            subject: email.subject,
+            userId: email.from.emailAddress.address,
+            receivedAt: email.receivedDateTime,
+            sent: false,
+            outlookEmailId: email.id,
+          };
+          await uploadEmailToCosmosDB(emailData);
+        }
+      }
+      displayError("Emails processed successfully.");
     } catch (error) {
       displayError(error.toString());
     }
