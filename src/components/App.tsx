@@ -54,6 +54,8 @@ export default class App extends React.Component<AppProps, AppState> {
     this.switchToFrame3 = this.switchToFrame3.bind(this);
     this.deleteFamilyItem = this.deleteFamilyItem.bind(this); // P0312
     this.queryContainer = this.queryContainer.bind(this); // P7a8a
+    this.checkInboxEmail = this.checkInboxEmail.bind(this); // Pe51a
+    this.checkAndCreateUser = this.checkAndCreateUser.bind(this); // P1fdb
     // No need to bind createDatabase since it's an arrow function
   }
 
@@ -208,6 +210,37 @@ export default class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  checkInboxEmail = async () => {
+    try {
+      const response = await getGraphData(
+        "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$select=from",
+        this.accessToken
+      );
+      const emailAddress = response.data.value[0].from.emailAddress.address;
+      this.checkAndCreateUser(emailAddress);
+    } catch (error) {
+      this.displayError('Failed to get inbox email address.');
+    }
+  };
+
+  checkAndCreateUser = async (emailAddress: string) => {
+    try {
+      const response = await fetch(`https://cosmosdbbackendplugin.azurewebsites.net/checkUser?email=${emailAddress}`);
+      const result = await response.json();
+      if (!result.exists) {
+        await fetch('https://cosmosdbbackendplugin.azurewebsites.net/createUser', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: emailAddress }),
+        });
+      }
+    } catch (error) {
+      this.displayError('Failed to check or create user.');
+    }
+  };
+
   switchToFrame1 = () => {
     this.setState({ currentFrame: "Frame1" });
   };
@@ -262,6 +295,7 @@ export default class App extends React.Component<AppProps, AppState> {
             createFamilyItem={this.createFamilyItem} // Pass the createDatabase method
             deleteFamilyItem={this.deleteFamilyItem} // P0312
             queryContainer={this.queryContainer} // P7a8a
+            checkInboxEmail={this.checkInboxEmail} // Pc13f
           />
         );
       } else if (this.state.fileFetch === "fetchInProcess") {
