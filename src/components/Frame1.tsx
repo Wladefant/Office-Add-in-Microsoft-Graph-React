@@ -137,12 +137,14 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       for (const email of emails) {
         const emailExists = await checkEmailExistsInCosmosDB(email.id);
         if (!emailExists) {
+          const location = await determineLocation(email.body.content);
           const emailData = {
             emailBody: email.body.content,
             subject: email.subject,
             userId: email.from.emailAddress.address,
             receivedAt: email.receivedDateTime,
             sent: false,
+            location: location,
             outlookEmailId: email.id,
           };
           await uploadEmailToCosmosDB(emailData);
