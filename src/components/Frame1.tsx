@@ -49,7 +49,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       if (response.data.choices && response.data.choices[0].message) {
         const determinedLocation = response.data.choices[0].message.content.trim();
         setLocation(determinedLocation);
-        await saveLocationToCosmosDB(determinedLocation); // Save location to CosmosDB
+        // await saveLocationToCosmosDB(determinedLocation); // Save location to CosmosDB
         return determinedLocation;
       } else {
         throw new Error("Unexpected API response structure");
@@ -60,7 +60,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     }
   };
 
-  // Function to save location to CosmosDB
+/*   // Function to save location to CosmosDB
   const saveLocationToCosmosDB = async (location: string) => {
     if (!location || location === "nicht gefunden") return;
   
@@ -85,7 +85,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     } catch (error) {
       console.error('Error saving location to server:', error);
     }
-  };
+  }; */
   
   const checkEmailExistsInCosmosDB = async (outlookEmailId: string) => {
     try {
