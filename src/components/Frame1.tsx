@@ -121,13 +121,19 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
 
   const handleAnalyseClick = async () => {
     try {
-      const response = await axios.get("https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$filter=from/emailAddress/address eq 'w.kirjanovs@realest-ai.com'", {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
+      // Fetch emails from the Graph API
+      const response = await axios.get(
+        "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages?$filter=from/emailAddress/address eq 'w.kirjanovs@realest-ai.com'",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         }
-      });
-      
+      );
+  
       const emails = response.data.value;
+  
+      // Process each email
       for (const email of emails) {
         const emailExists = await checkEmailExistsInCosmosDB(email.id);
         if (!emailExists) {
@@ -142,11 +148,27 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
           await uploadEmailToCosmosDB(emailData);
         }
       }
-      displayError("Emails processed successfully.");
+  
+      // Use the Office JavaScript API to get the current email's ID
+      const item = Office.context.mailbox.item;
+      if (item) {
+        // Get the REST-formatted ID of the current item
+        const restId = Office.context.mailbox.convertToRestId(
+          item.itemId,
+          Office.MailboxEnums.RestVersion.v2_0
+        );
+  
+        // Display the success message along with the current email's ID
+        displayError(`Emails processed successfully. Current Email ID: ${restId}`);
+      } else {
+        // If no item is available, display a different message
+        displayError("Emails processed successfully. No email is currently open.");
+      }
     } catch (error) {
       displayError(error.toString());
     }
   };
+  
 
   useEffect(() => {
     const fetchEmailContent = async () => {
