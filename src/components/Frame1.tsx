@@ -119,6 +119,23 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     }
   };
 
+  const fetchLocationFromCosmosDB = async (outlookEmailId: string) => {
+    try {
+      const encodedEmailId = encodeURIComponent(outlookEmailId);
+      const response = await fetch(
+        `https://cosmosdbbackendplugin.azurewebsites.net/fetchLocation?outlookEmailId=${encodedEmailId}`
+      );
+      console.log("Fetching location for Email ID:", outlookEmailId);
+      const result = await response.json();
+      console.log("Fetch result:", result);
+      return result.location;
+    } catch (error) {
+      console.error("Error fetching location from CosmosDB:", error);
+      return "Error fetching location.";
+    }
+  };
+  
+
   const handleAnalyseClick = async () => {
     try {
       // Fetch emails from the Graph API
@@ -174,19 +191,25 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
 
   useEffect(() => {
     const fetchEmailContent = async () => {
+      console.log("fetching email content");
       if (Office.context.mailbox.item) {
-        Office.context.mailbox.item.body.getAsync("text", (result) => {
-          if (result.status === Office.AsyncResultStatus.Succeeded) {
-            determineLocation(result.value).then((location) => {
-              setLocation(location);
-            });
-          } else {
-            console.error("Error fetching email content:", result.error);
-          }
-        });
+        console.log("context is on email");
+        console.log("Original Item ID:", Office.context.mailbox.item.itemId);
+  
+        // Convert the item ID to REST format
+        const restId = Office.context.mailbox.convertToRestId(
+          Office.context.mailbox.item.itemId,
+          Office.MailboxEnums.RestVersion.v2_0
+        );
+        console.log("REST-formatted Item ID:", restId);
+  
+        // Fetch the location using the REST-formatted ID
+        const location = await fetchLocationFromCosmosDB(restId);
+        console.log("Fetched Location:", location);
+        setLocation(location);
       }
     };
-
+  
     fetchEmailContent();
 
     const itemChangedHandler = () => {
@@ -199,6 +222,8 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       Office.context.mailbox.removeHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
     };
   }, []);
+  
+
   return (
     <FluentProvider theme={webLightTheme}>
       <div style={{ padding: "20px", width: "calc(100% - 40px)", margin: "0 auto" }}>

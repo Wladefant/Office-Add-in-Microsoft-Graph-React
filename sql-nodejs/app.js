@@ -266,6 +266,21 @@ app.post('/uploadEmail', async (req, res) => {
   res.status(201).send('Email uploaded successfully.');
 });
 
+// Define the endpoint that fetches the location from CosmosDB based on outlookEmailId
+app.get('/fetchLocation', async (req, res) => {
+  const outlookEmailId = req.query.outlookEmailId;
+  const querySpec = {
+    query: 'SELECT c.location FROM c WHERE c.outlookEmailId = @outlookEmailId',
+    parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
+  };
+  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  if (emails.length > 0) {
+    res.status(200).json({ location: emails[0].location });
+  } else {
+  }
+});
+
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
