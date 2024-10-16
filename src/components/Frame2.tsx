@@ -100,11 +100,60 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
     }
   };
 
-  // Function to create a draft reply
-  const createDraftReply = async () => {
+  // Function to check if the "akzeptiert" folder exists, and create it if not
+  const ensureAkzeptiertFolderExists = async (): Promise<string | null> => {
     try {
-      // Make API call to create draft reply
-      await axios.post(
+      // Check if the folder exists
+      const response = await axios.get(
+        "https://graph.microsoft.com/v1.0/me/mailFolders",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const folders = response.data.value;
+      let folder = folders.find((f: any) => f.displayName === "akzeptiert");
+
+      if (folder) {
+        // Folder exists, return its ID
+        return folder.id;
+      } else {
+        // Folder doesn't exist, create it
+        const createFolderResponse = await axios.post(
+          "https://graph.microsoft.com/v1.0/me/mailFolders",
+          {
+            displayName: "akzeptiert",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        return createFolderResponse.data.id;
+      }
+    } catch (error) {
+      console.error("Error ensuring 'akzeptiert' folder exists:", error);
+      return null;
+    }
+  };
+
+  // Function to create a draft reply and move it to the "akzeptiert" folder
+  const createDraftReplyAndMove = async () => {
+    try {
+      // Ensure the "akzeptiert" folder exists and get its ID
+      const akzeptiertFolderId = await ensureAkzeptiertFolderExists();
+
+      if (!akzeptiertFolderId) {
+        console.error("Could not obtain 'akzeptiert' folder ID.");
+        return;
+      }
+
+      // Create the draft reply
+      const createDraftResponse = await axios.post(
         `https://graph.microsoft.com/v1.0/me/messages/${emailId}/createReply`,
         {
           comment: "akzeptiert",
@@ -117,12 +166,28 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
         }
       );
 
-      console.log("Draft reply created successfully.");
+      const draftMessageId = createDraftResponse.data.id;
+
+      // Move the draft to the "akzeptiert" folder
+      await axios.post(
+        `https://graph.microsoft.com/v1.0/me/messages/${draftMessageId}/move`,
+        {
+          destinationId: akzeptiertFolderId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Draft reply created and moved to 'akzeptiert' folder.");
 
       // Switch to Frame3
       switchToFrame3();
     } catch (error) {
-      console.error("Error creating draft reply:", error);
+      console.error("Error creating draft reply and moving:", error);
     }
   };
 
@@ -160,7 +225,7 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
         <Button
           appearance="primary"
           style={{ width: "100%" }}
-          onClick={createDraftReply}
+          onClick={createDraftReplyAndMove}
         >
           Drafts erstellen
         </Button>
