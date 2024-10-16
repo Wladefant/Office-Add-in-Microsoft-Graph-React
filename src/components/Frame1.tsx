@@ -287,7 +287,6 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
         );
   
         // Display the success message along with the current email's ID
-        displayError(`Emails processed successfully. Current Email ID: ${restId}`);
       } else {
         // If no item is available, display a different message
         displayError("Emails processed successfully. No email is currently open.");
