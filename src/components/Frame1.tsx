@@ -276,15 +276,17 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
           const name = await determineName(email.body.content);
           const customerProfile = await determineCustomerProfile(email.body.content);
           const emailData = {
-            emailBody: email.body.content,
+            
             subject: email.subject,
             userId: email.from.emailAddress.address,
             receivedAt: email.receivedDateTime,
             sent: false,
             location: location,
             objectname: name,
+            folder: "",
             customerProfile: customerProfile,
             outlookEmailId: email.id,
+            emailBody: email.body.content
           };
           await uploadEmailToCosmosDB(emailData);
         }
