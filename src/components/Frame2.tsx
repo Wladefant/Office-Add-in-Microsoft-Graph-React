@@ -71,6 +71,20 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
     }
   };
 
+  const fetchObjectNameFromCosmosDB = async (outlookEmailId: string) => {
+    try {
+      const encodedEmailId = encodeURIComponent(outlookEmailId);
+      const response = await fetch(
+        `https://cosmosdbbackendplugin.azurewebsites.net/fetchName?outlookEmailId=${encodedEmailId}`
+      );
+      const result = await response.json();
+      return result.objectname;
+    } catch (error) {
+      console.error("Error fetching objectname from CosmosDB:", error);
+      return "Error fetching objectname.";
+    }
+  };
+
   useEffect(() => {
     const fetchEmailContent = async () => {
       if (Office.context.mailbox.item) {
@@ -80,6 +94,8 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
         );
         const customerProfile = await fetchCustomerProfileFromBackend(restId);
         setCustomerProfile(customerProfile);
+        const objectname = await fetchObjectNameFromCosmosDB(restId);
+        setPropertyName(objectname);
       }
     };
 
