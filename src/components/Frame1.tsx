@@ -19,11 +19,13 @@ interface Frame1Props {
 }
 
 const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessToken }) => {
-  const [location, setLocation] = useState("bisher nicht gespeicher");
+  const [location, setLocation] = useState("bisher nicht gespeichert");
   const [name, setName] = useState("bisher nicht gespeichert"); // Added state for name
   const [requests, setRequests] = useState("bisher nicht gespeichert");
   const [perfectCustomerProfile, setPerfectCustomerProfile] = useState("");
   const [requestInput, setRequestInput] = useState("");
+  const [customerProfile, setCustomerProfile] = useState("noch nicht gespeichert");
+
 
   const determineLocation = async (emailContent: string) => {
     const configuration = new Configuration({
@@ -193,6 +195,19 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     }
   };
 
+  const fetchCustomerProfileFromBackend = async (outlookEmailId: string) => {
+    try {
+      const encodedEmailId = encodeURIComponent(outlookEmailId);
+      const response = await fetch(
+        `https://cosmosdbbackendplugin.azurewebsites.net/fetchCustomerProfile?outlookEmailId=${encodedEmailId}`
+      );
+      const result = await response.json();
+      return result.customerProfile;
+    } catch (error) {
+      console.error("Error fetching customer profile from backend:", error);
+      return "Error fetching customer profile.";
+    }
+  };
   const handleAnalyseClick = async () => {
     try {
       // Fetch emails from the Graph API
@@ -272,6 +287,9 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
         const name = await fetchNameFromCosmosDB(restId);
         console.log("Fetched Name:", name);
         setName(name);
+
+        const customerProfile = await fetchCustomerProfileFromBackend(restId);
+        setCustomerProfile(customerProfile);
       }
     };
   
@@ -305,6 +323,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
             height: '100px', // Fixed height to allow for multiple lines
           }}
         />
+        <MarkdownCard markdown={customerProfile} />
 
         <Text style={{ fontSize: "16px", marginBottom: "10px" }}>
           Anzahl der akzeptierten Anfragen:
