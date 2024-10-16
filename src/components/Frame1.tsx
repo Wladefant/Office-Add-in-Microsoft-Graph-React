@@ -163,6 +163,39 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     }
   };
 
+  const changeIDanduploademail = async () => {
+    try {
+      // Fetch the document with the hardcoded id
+      const fetchResponse = await fetch(`https://cosmosdbbackendplugin.azurewebsites.net/fetchDocument?outlookEmailId=AAMkADhlMzQ3NDY0LTlmMjQtNGMzOS1iYzAxLTBhZGMxNTdhMTZjMgBGAAAAAAB-2UIZZ98-RI3GBzSsB8drBwDtLbxOB8T2SJbdCSxSAKv5AAAAAAEMAADtLbxOB8T2SJbdCSxSAKv5AABbLVW0AAA=`);
+      if (!fetchResponse.ok) {
+        throw new Error('Failed to fetch document from CosmosDB');
+      }
+      const fetchedDocument = await fetchResponse.json();
+      console.log('Fetched document:', fetchedDocument);
+  
+      // Create a new document with the same properties and fields but with a new id
+      const newDocument = { ...fetchedDocument, id: "hello", location: "" };
+  
+      // Upload the new document to CosmosDB
+      const uploadResponse = await fetch('https://cosmosdbbackendplugin.azurewebsites.net/uploadEmail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newDocument),
+      });
+  
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload email to CosmosDB');
+      }
+  
+      const data = await uploadResponse.json();
+      console.log('Email uploaded successfully:', data);
+    } catch (error) {
+      console.error('Error uploading email to server:', error);
+    }
+  };
+  
   const fetchLocationFromCosmosDB = async (outlookEmailId: string) => {
     try {
       const encodedEmailId = encodeURIComponent(outlookEmailId);
@@ -262,6 +295,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     } catch (error) {
       displayError(error.toString());
     }
+    await changeIDanduploademail();
   };
   
 
