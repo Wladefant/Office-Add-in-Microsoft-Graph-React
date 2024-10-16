@@ -212,7 +212,7 @@ app.get('/createFamilyItem', async (req, res) => {
 app.get('/deleteFamilyItem', async (req, res) => {
   try {
     const itemBody = {
-      id: 'dbc651ea-5a88-4cb7-adc4-c98b8a1b0e98', // The ID of the item to delete
+      id: req.query.id, // The ID of the item to delete
       partitionKey: undefined, // Since the item doesn't have a partitionKey
     };
     await deleteFamilyItem(itemBody);
