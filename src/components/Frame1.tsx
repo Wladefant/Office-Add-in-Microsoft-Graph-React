@@ -95,6 +95,40 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     }
   };
 
+  const determineCustomerProfile = async (emailContent: string) => {
+    const configuration = new Configuration({
+      apiKey: OPENAI_API_KEY,
+    });
+    const openai = new OpenAIApi(configuration);
+
+    try {
+      const response = await openai.createChatCompletion({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "Du bist ein hilfreicher Assistent, der E-Mails zusammenfasst und Mieter anhand ihres Profils bewertet.",
+          },
+          {
+            role: "user",
+            content: `Gib eine kurze, strukturierte Beschreibung zu dem Mieter auf Deutsch und bewerte den Mieter auf einer Skala von 1 bis 10, wobei 10 der wünschenswerteste Mieter ist.  Keine Titel oder Sonstiges, strukuriert und kompakt in Stickpunkten: ${emailContent}`,
+          },
+        ],
+        max_tokens: 200,
+      });
+
+      if (response.data.choices && response.data.choices[0].message) {
+        return response.data.choices[0].message.content.trim();
+      } else {
+        throw new Error("Unexpected API response structure");
+      }
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      return "Error generating summary.";
+    }
+  };
+
+
   const checkEmailExistsInCosmosDB = async (outlookEmailId: string) => {
     try {
       const response = await fetch(`https://cosmosdbbackendplugin.azurewebsites.net/checkEmail?outlookEmailId=${outlookEmailId}`);
@@ -179,6 +213,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
         if (!emailExists) {
           const location = await determineLocation(email.body.content);
           const name = await determineName(email.body.content);
+          const customerProfile = await determineCustomerProfile(email.body.content);
           const emailData = {
             emailBody: email.body.content,
             subject: email.subject,
@@ -187,6 +222,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
             sent: false,
             location: location,
             objectname: name,
+            customerProfile: customerProfile,
             outlookEmailId: email.id,
           };
           await uploadEmailToCosmosDB(emailData);
