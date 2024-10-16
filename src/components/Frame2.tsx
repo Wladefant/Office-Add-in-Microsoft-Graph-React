@@ -10,53 +10,67 @@ import {
 import MarkdownCard from "./MarkdownCard";
 import { Configuration, OpenAIApi } from "openai";
 import OPENAI_API_KEY from "../../config/openaiKey";
+import axios from "axios";
 
 interface Frame2Props {
   switchToFrame3: () => void;
-  createTestMailFolder: () => void;
+  accessToken: string;
 }
 
-const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder }) => {
+const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
   // State for the dynamic values
   const [propertyName, setPropertyName] = useState("Immobilie XXX");
-  const [requestsInfo, setRequestsInfo] = useState("XXX der XXX Anfragen treffen auf die Profilbeschreibung zu");
+  const [requestsInfo, setRequestsInfo] = useState(
+    "XXX der XXX Anfragen treffen auf die Profilbeschreibung zu"
+  );
   const [confirmationTemplate, setConfirmationTemplate] = useState("");
   const [rejectionTemplate, setRejectionTemplate] = useState("");
   const [customerProfile, setCustomerProfile] = useState("");
 
-  const generateSummary = async (emailContent: string) => {
-    const configuration = new Configuration({
-      apiKey: OPENAI_API_KEY,
-    });
-    const openai = new OpenAIApi(configuration);
+  const restId = Office.context.mailbox.convertToRestId(
+    Office.context.mailbox.item.itemId,
+    Office.MailboxEnums.RestVersion.v2_0
+  );
+  console.log("REST-formatted Item ID:", restId);
+  const emailId =restId;
+  // Fetch customer profile and property name
+  useEffect(() => {
+    const fetchEmailContent = async () => {
+      if (Office.context.mailbox.item) {
+        // Get the REST ID of the current email
+        const restId = Office.context.mailbox.convertToRestId(
+          Office.context.mailbox.item.itemId,
+          Office.MailboxEnums.RestVersion.v2_0
+        );
 
-    try {
-      const response = await openai.createChatCompletion({
-        model: "gpt-4o", // or 'gpt-4' if you have access
-        messages: [
-          {
-            role: "system",
-            content: "Du bist ein hilfreicher Assistent, der E-Mails zusammenfasst und Mieter anhand ihres Profils bewertet.",
-          },
-          {
-            role: "user",
-            content: `Gib eine kurze, strukturierte Beschreibung zu dem Mieter auf Deutsch und bewerte den Mieter auf einer Skala von 1 bis 10, wobei 10 der wünschenswerteste Mieter ist. Output in Markdown. Keine Titel oder Sonstiges, strukuriert und kompakt in Stickpunkten: ${emailContent}`,
-          },
-        ],
-        max_tokens: 200,
-      });
-
-      if (response.data.choices && response.data.choices[0].message) {
-        return response.data.choices[0].message.content.trim();
-      } else {
-        throw new Error("Unexpected API response structure");
+        // Fetch customer profile and property name
+        const customerProfile = await fetchCustomerProfileFromBackend(restId);
+        setCustomerProfile(customerProfile);
+        const objectname = await fetchObjectNameFromCosmosDB(restId);
+        setPropertyName(objectname);
       }
-    } catch (error) {
-      console.error("Error generating summary:", error);
-      return "Error generating summary.";
-    }
-  };
+    };
 
+    fetchEmailContent();
+
+    const itemChangedHandler = () => {
+      fetchEmailContent();
+    };
+
+    Office.context.mailbox.addHandlerAsync(
+      Office.EventType.ItemChanged,
+      itemChangedHandler
+    );
+
+    return () => {
+      Office.context.mailbox.removeHandlerAsync(
+        Office.EventType.ItemChanged,
+        itemChangedHandler
+      );
+    };
+  }, []);
+
+  // Function to fetch customer profile from backend
   const fetchCustomerProfileFromBackend = async (outlookEmailId: string) => {
     try {
       const encodedEmailId = encodeURIComponent(outlookEmailId);
@@ -71,6 +85,7 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
     }
   };
 
+  // Function to fetch object name from CosmosDB
   const fetchObjectNameFromCosmosDB = async (outlookEmailId: string) => {
     try {
       const encodedEmailId = encodeURIComponent(outlookEmailId);
@@ -80,67 +95,44 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
       const result = await response.json();
       return result.objectname;
     } catch (error) {
-      console.error("Error fetching objectname from CosmosDB:", error);
-      return "Error fetching objectname.";
+      console.error("Error fetching object name from CosmosDB:", error);
+      return "Error fetching object name.";
     }
   };
 
-  useEffect(() => {
-    const fetchEmailContent = async () => {
-      if (Office.context.mailbox.item) {
-        const restId = Office.context.mailbox.convertToRestId(
-          Office.context.mailbox.item.itemId,
-          Office.MailboxEnums.RestVersion.v2_0
-        );
-        const customerProfile = await fetchCustomerProfileFromBackend(restId);
-        setCustomerProfile(customerProfile);
-        const objectname = await fetchObjectNameFromCosmosDB(restId);
-        setPropertyName(objectname);
-      }
-    };
+  // Function to create a draft reply
+  const createDraftReply = async () => {
+    try {
+      // Make API call to create draft reply
+      await axios.post(
+        `https://graph.microsoft.com/v1.0/me/messages/${emailId}/createReply`,
+        {
+          comment: "akzeptiert",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    fetchEmailContent();
+      console.log("Draft reply created successfully.");
 
-    const itemChangedHandler = () => {
-      fetchEmailContent();
-    };
-
-    Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
-
-    return () => {
-      Office.context.mailbox.removeHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
-    };
-  }, []);
-
-  // Dummy data for the top results
-  const topResults = [
-    { name: "Name", platform: "Plattform", description: "Kurze Beschreibung" },
-    { name: "Name", platform: "Plattform", description: "Kurze Beschreibung" },
-    { name: "Name", platform: "Plattform", description: "Kurze Beschreibung" },
-  ];
+      // Switch to Frame3
+      switchToFrame3();
+    } catch (error) {
+      console.error("Error creating draft reply:", error);
+    }
+  };
 
   return (
     <FluentProvider theme={webLightTheme}>
       <div style={{ padding: "20px", maxWidth: "400px", margin: "0 auto" }}>
-        {/* Logo and Title */}
-        
-
         {/* Property Information */}
         <MarkdownCard markdown={`**${propertyName}**`} />
         <MarkdownCard markdown={requestsInfo} />
-
-        {/* Top Results */}
-        {/* <Text style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "10px" }}>
-          Top XXX Treffer:
-        </Text>
-        <div style={{ marginBottom: "20px" }}>
-          {topResults.map((result, index) => (
-            <MarkdownCard key={index} markdown={`**${result.name}**\n\n${result.platform}\n\n${result.description}`} />
-          ))}
-        </div> */}
         <MarkdownCard markdown={customerProfile} />
-
-        
 
         {/* Templates */}
         <Textarea
@@ -149,8 +141,8 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
           onChange={(e) => setConfirmationTemplate(e.target.value)}
           style={{
             marginBottom: "10px",
-            width: '100%',
-            height: '100px',
+            width: "100%",
+            height: "100px",
           }}
         />
         <Textarea
@@ -159,8 +151,8 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
           onChange={(e) => setRejectionTemplate(e.target.value)}
           style={{
             marginBottom: "20px",
-            width: '100%',
-            height: '100px',
+            width: "100%",
+            height: "100px",
           }}
         />
 
@@ -168,10 +160,7 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
         <Button
           appearance="primary"
           style={{ width: "100%" }}
-          onClick={() => {
-            createTestMailFolder();
-            switchToFrame3();
-          }}
+          onClick={createDraftReply}
         >
           Drafts erstellen
         </Button>
