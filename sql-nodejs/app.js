@@ -173,9 +173,10 @@ async function deleteFamilyItem(itemBody) {
     .database(databaseId)
     .container(containerId)
     .item(itemBody.id, itemBody.partitionKey)
-    .delete(itemBody)
-  console.log(`Deleted item:\n${itemBody.id}\n`)
+    .delete(); // Removed itemBody from delete()
+  console.log(`Deleted item:\n${itemBody.id}\n`);
 }
+
 
 /**
  * Cleanup the database and collection on completion
@@ -210,10 +211,14 @@ app.get('/createFamilyItem', async (req, res) => {
 // Define the endpoint that triggers deleteFamilyItem
 app.get('/deleteFamilyItem', async (req, res) => {
   try {
-    await deleteFamilyItem(config.items.Andersen);
+    const itemBody = {
+      id: 'dbc651ea-5a88-4cb7-adc4-c98b8a1b0e98', // The ID of the item to delete
+      partitionKey: undefined, // Since the item doesn't have a partitionKey
+    };
+    await deleteFamilyItem(itemBody);
     res.status(200).send('Family deleted successfully.');
   } catch (error) {
-    console.error(error);
+    console.error('Error deleting item:', error);
     res.status(500).send('Error deleting Family.');
   }
 });
@@ -255,14 +260,14 @@ app.get('/checkEmail', async (req, res) => {
     query: 'SELECT * FROM c WHERE c.outlookEmailId = @outlookEmailId',
     parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
   };
-  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  const { resources: emails } = await client.database(databaseId).container('Items').items.query(querySpec).fetchAll();
   res.status(200).json({ exists: emails.length > 0 });
 });
 
 // Define the endpoint that uploads an email to CosmosDB
 app.post('/uploadEmail', async (req, res) => {
   const emailData = req.body;
-  await client.database(databaseId).container('Emails').items.create(emailData);
+  await client.database(databaseId).container('Items').items.create(emailData);
 });
 
 // Define the endpoint that fetches the location from CosmosDB based on outlookEmailId
@@ -272,7 +277,7 @@ app.get('/fetchLocation', async (req, res) => {
     query: 'SELECT c.location FROM c WHERE c.outlookEmailId = @outlookEmailId',
     parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
   };
-  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  const { resources: emails } = await client.database(databaseId).container('Items').items.query(querySpec).fetchAll();
   if (emails.length > 0) {
     res.status(200).json({ location: emails[0].location });
   } else {
@@ -286,7 +291,7 @@ app.get('/fetchName', async (req, res) => {
     query: 'SELECT c.objectname FROM c WHERE c.outlookEmailId = @outlookEmailId',
     parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
   };
-  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  const { resources: emails } = await client.database(databaseId).container('Items').items.query(querySpec).fetchAll();
   if (emails.length > 0) {
     res.status(200).json({ objectname: emails[0].objectname });
   } else {
@@ -301,7 +306,7 @@ app.get('/fetchCustomerProfile', async (req, res) => {
     query: 'SELECT c.customerProfile FROM c WHERE c.outlookEmailId = @outlookEmailId',
     parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
   };
-  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  const { resources: emails } = await client.database(databaseId).container('Items').items.query(querySpec).fetchAll();
   if (emails.length > 0) {
     res.status(200).json({ customerProfile: emails[0].customerProfile });
   } else {
@@ -314,14 +319,13 @@ app.get('/fetchDocument', async (req, res) => {
     query: 'SELECT * FROM c WHERE c.outlookEmailId = @outlookEmailId',
     parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
   };
-  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  const { resources: emails } = await client.database(databaseId).container('Items').items.query(querySpec).fetchAll();
   if (emails.length > 0) {
     res.status(200).json(emails[0]);
   } else {
     res.status(404).send('Document not found.');
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
