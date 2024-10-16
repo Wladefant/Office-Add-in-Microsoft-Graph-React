@@ -263,7 +263,6 @@ app.get('/checkEmail', async (req, res) => {
 app.post('/uploadEmail', async (req, res) => {
   const emailData = req.body;
   await client.database(databaseId).container('Emails').items.create(emailData);
-  res.status(201).send('Email uploaded successfully.');
 });
 
 // Define the endpoint that fetches the location from CosmosDB based on outlookEmailId
@@ -279,6 +278,21 @@ app.get('/fetchLocation', async (req, res) => {
   } else {
   }
 });
+
+// Define the endpoint that fetches the name from CosmosDB based on outlookEmailId
+app.get('/fetchName', async (req, res) => {
+  const outlookEmailId = req.query.outlookEmailId;
+  const querySpec = {
+    query: 'SELECT c.objectname FROM c WHERE c.outlookEmailId = @outlookEmailId',
+    parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
+  };
+  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  if (emails.length > 0) {
+    res.status(200).json({ objectname: emails[0].objectname });
+  } else {
+  }
+});
+
 
 
 // Start the server
