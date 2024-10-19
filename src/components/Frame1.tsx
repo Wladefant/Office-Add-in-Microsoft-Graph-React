@@ -19,9 +19,9 @@ interface Frame1Props {
 }
 
 const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessToken }) => {
-  const [location, setLocation] = useState("xxx");
+  const [location, setLocation] = useState("bisher nicht gespeicher");
   const [name, setName] = useState("bisher nicht gespeichert"); // Added state for name
-  const [requests, setRequests] = useState("XXX");
+  const [requests, setRequests] = useState("bisher nicht gespeichert");
   const [perfectCustomerProfile, setPerfectCustomerProfile] = useState("");
   const [requestInput, setRequestInput] = useState("");
 
