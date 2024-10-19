@@ -186,32 +186,13 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
     };
   }, []);
 
-  // Dummy data for the top results
-  const topResults = [
-    { name: "Name", platform: "Plattform", description: "Kurze Beschreibung" },
-    { name: "Name", platform: "Plattform", description: "Kurze Beschreibung" },
-    { name: "Name", platform: "Plattform", description: "Kurze Beschreibung" },
-  ];
 
   return (
     <FluentProvider theme={webLightTheme}>
       <div style={{ padding: "20px", maxWidth: "400px", margin: "0 auto" }}>
-        {/* Logo and Title */}
-        
-
         {/* Property Information */}
         <MarkdownCard markdown={`**${propertyName}**`} />
         <MarkdownCard markdown={requestsInfo} />
-
-        {/* Top Results */}
-        {/* <Text style={{ fontSize: "16px", fontWeight: "bold", marginBottom: "10px" }}>
-          Top XXX Treffer:
-        </Text>
-        <div style={{ marginBottom: "20px" }}>
-          {topResults.map((result, index) => (
-            <MarkdownCard key={index} markdown={`**${result.name}**\n\n${result.platform}\n\n${result.description}`} />
-          ))}
-        </div> */}
         <MarkdownCard markdown={customerProfile} />
 
         
