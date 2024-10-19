@@ -284,6 +284,21 @@ app.get('/fetchLocation', async (req, res) => {
   }
 });
 
+// Define the endpoint that fetches the name from CosmosDB based on outlookEmailId
+app.get('/fetchName', async (req, res) => {
+  const outlookEmailId = req.query.outlookEmailId;
+  const querySpec = {
+    query: 'SELECT c.objectname FROM c WHERE c.outlookEmailId = @outlookEmailId',
+    parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
+  };
+  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  if (emails.length > 0) {
+    res.status(200).json({ objectname: emails[0].objectname });
+  } else {
+  }
+});
+
+
 
 // Start the server
 app.listen(port, () => {

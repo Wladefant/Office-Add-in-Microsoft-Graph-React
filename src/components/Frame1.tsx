@@ -20,6 +20,7 @@ interface Frame1Props {
 
 const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessToken }) => {
   const [location, setLocation] = useState("xxx");
+  const [name, setName] = useState("bisher nicht gespeichert"); // Added state for name
   const [requests, setRequests] = useState("XXX");
   const [perfectCustomerProfile, setPerfectCustomerProfile] = useState("");
   const [requestInput, setRequestInput] = useState("");
@@ -60,6 +61,40 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     }
   };
 
+  const determineName = async (emailContent: string) => {
+    const configuration = new Configuration({
+      apiKey: OPENAI_API_KEY,
+    });
+    const openai = new OpenAIApi(configuration);
+
+    try {
+      const response = await openai.createChatCompletion({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "Du bist ein hilfreicher Assistent, der den Namen der Immobilie aus E-Mail-Inhalten extrahiert.",
+          },
+          {
+            role: "user",
+            content: `Bestimme den Namen der Immobilie aus dem folgenden E-Mail-Inhalt und gib als output nur den Namen wieder, falls nicht gefunden "nicht gefunden": ${emailContent}`,
+          },
+        ],
+        max_tokens: 50,
+      });
+
+      if (response.data.choices && response.data.choices[0].message) {
+        const determinedName = response.data.choices[0].message.content.trim();
+        setName(determinedName);
+        return determinedName;
+      } else {
+        throw new Error("Unexpected API response structure");
+      }
+    } catch (error) {
+      console.error("Error determining name:", error);
+      return "Error determining name.";
+    }
+  };
 /*   // Function to save location to CosmosDB
   const saveLocationToCosmosDB = async (location: string) => {
     if (!location || location === "nicht gefunden") return;
@@ -134,7 +169,22 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       return "Error fetching location.";
     }
   };
-  
+
+  const fetchNameFromCosmosDB = async (outlookEmailId: string) => {
+    try {
+      const encodedEmailId = encodeURIComponent(outlookEmailId);
+      const response = await fetch(
+        `https://cosmosdbbackendplugin.azurewebsites.net/fetchName?outlookEmailId=${encodedEmailId}`
+      );
+      console.log("Fetching name for Email ID:", outlookEmailId);
+      const result = await response.json();
+      console.log("Fetch result:", result);
+      return result.objectname;
+    } catch (error) {
+      console.error("Error fetching name from CosmosDB:", error);
+      return "Error fetching name.";
+    }
+  };
 
   const handleAnalyseClick = async () => {
     try {
@@ -155,6 +205,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
         const emailExists = await checkEmailExistsInCosmosDB(email.id);
         if (!emailExists) {
           const location = await determineLocation(email.body.content);
+          const name = await determineName(email.body.content);
           const emailData = {
             emailBody: email.body.content,
             subject: email.subject,
@@ -162,6 +213,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
             receivedAt: email.receivedDateTime,
             sent: false,
             location: location,
+            objectname: name,
             outlookEmailId: email.id,
           };
           await uploadEmailToCosmosDB(emailData);
@@ -207,6 +259,10 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
         const location = await fetchLocationFromCosmosDB(restId);
         console.log("Fetched Location:", location);
         setLocation(location);
+
+        const name = await fetchNameFromCosmosDB(restId);
+        console.log("Fetched Name:", name);
+        setName(name);
       }
     };
   
@@ -228,7 +284,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     <FluentProvider theme={webLightTheme}>
       <div style={{ padding: "20px", width: "calc(100% - 40px)", margin: "0 auto" }}>
         
-        <MarkdownCard markdown={`**Ort:** ${location}\n\n **${requests}** Anfragen gefunden.`} />
+        <MarkdownCard markdown={`**Ort:** ${location}\n\n**Name:** ${name}\n\n **${requests}** Anfragen gefunden.`} />
 
         <Textarea
           placeholder="Beschreiben sie die Voraussetzungen für den perfekten Kunden"
