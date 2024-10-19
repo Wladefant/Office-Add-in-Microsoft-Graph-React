@@ -4,7 +4,12 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+  origin: ['https://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true // Include this if you need to send cookies or authorization headers
+}));
 app.use(express.json()); // Add this line to parse JSON request bodies
 
 const CosmosClient = require('@azure/cosmos').CosmosClient
