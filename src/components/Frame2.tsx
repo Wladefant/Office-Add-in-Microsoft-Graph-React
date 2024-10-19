@@ -31,39 +31,6 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
   );
   console.log("REST-formatted Item ID:", restId);
   const emailId =restId;
-
-  const generateSummary = async (emailContent: string) => {
-    const configuration = new Configuration({
-      apiKey: OPENAI_API_KEY,
-    });
-    const openai = new OpenAIApi(configuration);
-
-    try {
-      const response = await openai.createChatCompletion({
-        model: "gpt-4o", // or 'gpt-4' if you have access
-        messages: [
-          {
-            role: "system",
-            content: "Du bist ein hilfreicher Assistent, der E-Mails zusammenfasst und Mieter anhand ihres Profils bewertet.",
-          },
-          {
-            role: "user",
-            content: `Gib eine kurze, strukturierte Beschreibung zu dem Mieter auf Deutsch und bewerte den Mieter auf einer Skala von 1 bis 10, wobei 10 der wünschenswerteste Mieter ist. Output in Markdown. Keine Titel oder Sonstiges, strukuriert und kompakt in Stickpunkten: ${emailContent}`,
-          },
-        ],
-        max_tokens: 200,
-      });
-
-      if (response.data.choices && response.data.choices[0].message) {
-        return response.data.choices[0].message.content.trim();
-      } else {
-        throw new Error("Unexpected API response structure");
-      }
-    } catch (error) {
-      console.error("Error generating summary:", error);
-      return "Error generating summary.";
-    }
-  };
   const fetchCustomerProfileFromBackend = async (outlookEmailId: string) => {
     try {
       const encodedEmailId = encodeURIComponent(outlookEmailId);
