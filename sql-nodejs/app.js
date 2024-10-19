@@ -268,7 +268,6 @@ app.get('/checkEmail', async (req, res) => {
 app.post('/uploadEmail', async (req, res) => {
   const emailData = req.body;
   await client.database(databaseId).container('Emails').items.create(emailData);
-  res.status(201).send('Email uploaded successfully.');
 });
 
 // Define the endpoint that fetches the location from CosmosDB based on outlookEmailId
