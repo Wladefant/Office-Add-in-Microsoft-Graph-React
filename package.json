@@ -22,10 +22,10 @@
         "@azure/msal-browser": "3.7.1",
         "@fluentui/react": "^8.121.2",
         "@fluentui/react-components": "^9.54.17",
-        "axios": "^1.6.8",
+        "axios": "^1.7.7",
         "core-js": "^3.36.1",
         "office-ui-fabric-react": "^7.204.0",
-        "openai": "^3.3.0",
+        "openai": "^4.68.1",
         "react": ">=16.3.2-0 <17.0.0",
         "react-dom": ">=16.3.2-0 <17.0.0",
         "react-markdown": "^6.0.3"
