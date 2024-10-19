@@ -50,7 +50,6 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       if (response.data.choices && response.data.choices[0].message) {
         const determinedLocation = response.data.choices[0].message.content.trim();
         setLocation(determinedLocation);
-        // await saveLocationToCosmosDB(determinedLocation); // Save location to CosmosDB
         return determinedLocation;
       } else {
         throw new Error("Unexpected API response structure");
@@ -95,33 +94,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       return "Error determining name.";
     }
   };
-/*   // Function to save location to CosmosDB
-  const saveLocationToCosmosDB = async (location: string) => {
-    if (!location || location === "nicht gefunden") return;
-  
-    try {
-      const itemId = Office.context.mailbox.item.itemId; // Get the email ID
-  
-      // Send a POST request to your server
-      const response = await fetch('http://localhost:5000/save-location', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ location, emailId: itemId }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to save location to CosmosDB');
-      }
-  
-      const data = await response.json();
-      console.log('Location saved successfully:', data);
-    } catch (error) {
-      console.error('Error saving location to server:', error);
-    }
-  }; */
-  
+
   const checkEmailExistsInCosmosDB = async (outlookEmailId: string) => {
     try {
       const response = await fetch(`https://cosmosdbbackendplugin.azurewebsites.net/checkEmail?outlookEmailId=${outlookEmailId}`);
