@@ -10,19 +10,27 @@ import {
 import MarkdownCard from "./MarkdownCard";
 import { Configuration, OpenAIApi } from "openai";
 import OPENAI_API_KEY from "../../config/openaiKey";
+import axios from "axios";
 
 interface Frame2Props {
   switchToFrame3: () => void;
-  createTestMailFolder: () => void;
+  accessToken: string;
 }
 
-const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder }) => {
+const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
   // State for the dynamic values
   const [propertyName, setPropertyName] = useState("Immobilie XXX");
   const [requestsInfo, setRequestsInfo] = useState("XXX der XXX Anfragen treffen auf die Profilbeschreibung zu");
   const [confirmationTemplate, setConfirmationTemplate] = useState("");
   const [rejectionTemplate, setRejectionTemplate] = useState("");
   const [customerProfile, setCustomerProfile] = useState("");
+
+  const restId = Office.context.mailbox.convertToRestId(
+    Office.context.mailbox.item.itemId,
+    Office.MailboxEnums.RestVersion.v2_0
+  );
+  console.log("REST-formatted Item ID:", restId);
+  const emailId =restId;
 
   const generateSummary = async (emailContent: string) => {
     const configuration = new Configuration({
@@ -56,7 +64,6 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
       return "Error generating summary.";
     }
   };
-
   const fetchCustomerProfileFromBackend = async (outlookEmailId: string) => {
     try {
       const encodedEmailId = encodeURIComponent(outlookEmailId);
@@ -85,6 +92,31 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
     }
   };
 
+  // Function to create a draft reply
+  const createDraftReply = async () => {
+    try {
+      // Make API call to create draft reply
+      await axios.post(
+        `https://graph.microsoft.com/v1.0/me/messages/${emailId}/createReply`,
+        {
+          comment: "akzeptiert",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Draft reply created successfully.");
+
+      // Switch to Frame3
+      switchToFrame3();
+    } catch (error) {
+      console.error("Error creating draft reply:", error);
+    }
+  };
   useEffect(() => {
     const fetchEmailContent = async () => {
       if (Office.context.mailbox.item) {
@@ -168,10 +200,7 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
         <Button
           appearance="primary"
           style={{ width: "100%" }}
-          onClick={() => {
-            createTestMailFolder();
-            switchToFrame3();
-          }}
+          onClick={createDraftReply}
         >
           Drafts erstellen
         </Button>
