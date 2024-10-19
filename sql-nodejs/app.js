@@ -313,6 +313,20 @@ app.get('/fetchCustomerProfile', async (req, res) => {
   }
 });
 
+app.get('/fetchDocument', async (req, res) => {
+  const outlookEmailId = req.query.outlookEmailId;
+  const querySpec = {
+    query: 'SELECT * FROM c WHERE c.outlookEmailId = @outlookEmailId',
+    parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
+  };
+  const { resources: emails } = await client.database(databaseId).container('Emails').items.query(querySpec).fetchAll();
+  if (emails.length > 0) {
+    res.status(200).json(emails[0]);
+  } else {
+    res.status(404).send('Document not found.');
+  }
+});
+
 
 // Start the server
 app.listen(port, () => {
