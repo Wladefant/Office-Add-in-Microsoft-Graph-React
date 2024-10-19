@@ -57,18 +57,29 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, createTestMailFolder })
     }
   };
 
+  const fetchCustomerProfileFromBackend = async (outlookEmailId: string) => {
+    try {
+      const encodedEmailId = encodeURIComponent(outlookEmailId);
+      const response = await fetch(
+        `https://cosmosdbbackendplugin.azurewebsites.net/fetchCustomerProfile?outlookEmailId=${encodedEmailId}`
+      );
+      const result = await response.json();
+      return result.customerProfile;
+    } catch (error) {
+      console.error("Error fetching customer profile from backend:", error);
+      return "Error fetching customer profile.";
+    }
+  };
+
   useEffect(() => {
     const fetchEmailContent = async () => {
       if (Office.context.mailbox.item) {
-        Office.context.mailbox.item.body.getAsync("text", (result) => {
-          if (result.status === Office.AsyncResultStatus.Succeeded) {
-            generateSummary(result.value).then((summary) => {
-              setCustomerProfile(summary);
-            });
-          } else {
-            console.error("Error fetching email content:", result.error);
-          }
-        });
+        const restId = Office.context.mailbox.convertToRestId(
+          Office.context.mailbox.item.itemId,
+          Office.MailboxEnums.RestVersion.v2_0
+        );
+        const customerProfile = await fetchCustomerProfileFromBackend(restId);
+        setCustomerProfile(customerProfile);
       }
     };
 
