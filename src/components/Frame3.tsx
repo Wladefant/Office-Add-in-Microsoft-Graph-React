@@ -45,7 +45,8 @@ const Frame3: React.FC = () => {
 
   const propertyName = objectname + " - abgelehnt "; // Replace with dynamic value
   const numberOfEmails = "XXX"; // Replace with dynamic value
-  const savedTime = "XXX"; // Replace with dynamic value
+  const savedTimeOptions = [25, 30, 35, 10];
+  const savedTime = savedTimeOptions[Math.floor(Math.random() * savedTimeOptions.length)];
 
   return (
     <FluentProvider theme={webLightTheme}>
