@@ -33,7 +33,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
 
     try {
       const response = await openai.createChatCompletion({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
