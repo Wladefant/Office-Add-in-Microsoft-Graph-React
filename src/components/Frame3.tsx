@@ -1,8 +1,49 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import { FluentProvider, webLightTheme, Text } from "@fluentui/react-components";
 
 const Frame3: React.FC = () => {
-  const propertyName = "XXX (Immobilienname)"; // Replace with dynamic value
+  const [objectname, setObjectName] = useState(""); // New state variable for objectname
+
+  const fetchObjectNameFromCosmosDB = async (outlookEmailId: string) => {
+    try {
+      const encodedEmailId = encodeURIComponent(outlookEmailId);
+      const response = await fetch(
+        `https://cosmosdbbackendplugin.azurewebsites.net/fetchName?outlookEmailId=${encodedEmailId}`
+      );
+      const result = await response.json();
+      return result.objectname;
+    } catch (error) {
+      console.error("Error fetching objectname from CosmosDB:", error);
+      return "Error fetching objectname.";
+    }
+  };
+
+  useEffect(() => {
+    const fetchEmailContent = async () => {
+      if (Office.context.mailbox.item) {
+        const restId = Office.context.mailbox.convertToRestId(
+          Office.context.mailbox.item.itemId,
+          Office.MailboxEnums.RestVersion.v2_0
+        );
+        const objectname = await fetchObjectNameFromCosmosDB(restId);
+        setObjectName(objectname);
+      }
+    };
+
+    fetchEmailContent();
+
+    const itemChangedHandler = () => {
+      fetchEmailContent();
+    };
+
+    Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
+
+    return () => {
+      Office.context.mailbox.removeHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
+    };
+  }, []);
+
+  const propertyName = objectname + " - abgelehnt "; // Replace with dynamic value
   const numberOfEmails = "XXX"; // Replace with dynamic value
   const savedTime = "XXX"; // Replace with dynamic value
 
@@ -29,6 +70,10 @@ const Frame3: React.FC = () => {
 
         <p style={{ fontSize: "16px", marginBottom: "20px" }}>
           Du hast dir ca. {savedTime} Minuten Arbeitszeit gespart!
+        </p>
+
+        <p style={{ fontSize: "16px", marginBottom: "20px" }}>
+          Objektname: {objectname}
         </p>
       </div>
     </FluentProvider>
