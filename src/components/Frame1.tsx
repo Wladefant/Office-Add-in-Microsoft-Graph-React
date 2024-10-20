@@ -165,16 +165,28 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
 
   const changeIDanduploademail = async () => {
     try {
-      // Fetch the document with the hardcoded id
-      const fetchResponse = await fetch(`https://cosmosdbbackendplugin.azurewebsites.net/fetchDocument?outlookEmailId=AAMkADhlMzQ3NDY0LTlmMjQtNGMzOS1iYzAxLTBhZGMxNTdhMTZjMgBGAAAAAAB-2UIZZ98-RI3GBzSsB8drBwDtLbxOB8T2SJbdCSxSAKv5AAAAAAEMAADtLbxOB8T2SJbdCSxSAKv5AABbLVW0AAA=`);
+      const restId = Office.context.mailbox.convertToRestId(
+        Office.context.mailbox.item.itemId,
+        Office.MailboxEnums.RestVersion.v2_0
+      );
+      const fetchResponse = await fetch(`https://cosmosdbbackendplugin.azurewebsites.net/fetchDocument?outlookEmailId=${restId}`);
       if (!fetchResponse.ok) {
         throw new Error('Failed to fetch document from CosmosDB');
       }
       const fetchedDocument = await fetchResponse.json();
       console.log('Fetched document:', fetchedDocument);
   
+      // Delete the fetched document
+      const deleteResponse = await fetch(`https://cosmosdbbackendplugin.azurewebsites.net/deleteFamilyItem?id=${fetchedDocument.id}`, {
+        method: 'GET',
+      });
+      if (!deleteResponse.ok) {
+        throw new Error('Failed to delete document from CosmosDB');
+      }
+      console.log('Document deleted successfully');
+  
       // Create a new document with the same properties and fields but with a new id
-      const newDocument = { ...fetchedDocument, id: "hello", location: "" };
+      const newDocument = { ...fetchedDocument, id: fetchedDocument.id, location: "" };
   
       // Upload the new document to CosmosDB
       const uploadResponse = await fetch('https://cosmosdbbackendplugin.azurewebsites.net/uploadEmail', {
@@ -259,9 +271,11 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       for (const email of emails) {
         const emailExists = await checkEmailExistsInCosmosDB(email.id);
         if (!emailExists) {
+          // Extract details if the email does not exist
           const location = await determineLocation(email.body.content);
           const name = await determineName(email.body.content);
           const customerProfile = await determineCustomerProfile(email.body.content);
+  
           const emailData = {
             emailBody: email.body.content,
             subject: email.subject,
@@ -273,7 +287,12 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
             customerProfile: customerProfile,
             outlookEmailId: email.id,
           };
+  
+          // Upload to CosmosDB only if the email doesn't already exist
           await uploadEmailToCosmosDB(emailData);
+          console.log(`Uploaded email: ${email.id}`);
+        } else {
+          console.log(`Email ${email.id} already exists, skipping upload.`);
         }
       }
   
@@ -294,6 +313,8 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     } catch (error) {
       displayError(error.toString());
     }
+  
+    await changeIDanduploademail();
   };
   
 

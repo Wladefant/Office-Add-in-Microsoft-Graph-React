@@ -5,7 +5,7 @@ const port = process.env.PORT || 3001;
 
 // Enable CORS
 app.use(cors({
-  origin: ['https://localhost:3000'],
+  origin: ['https://localhost:3000', 'https://officefronten.z6.web.core.windows.net'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Include this if you need to send cookies or authorization headers
@@ -22,7 +22,7 @@ const key = config.key
 
 const databaseId = config.database.id
 const containerId = config.container.id
-const partitionKey = { kind: 'Hash', paths: ['/partitionKey'] }
+const partitionKey = { kind: 'Hash', paths: ['/userid']  }
 
 const options = {
       endpoint: endpoint,
@@ -201,25 +201,29 @@ function exit(message) {
   process.stdin.on('data', process.exit.bind(process, 0))
 }
 
-// Define the endpoint that triggers createDatabase
+// Define the endpoint that triggers createFamilyItem
 app.get('/createFamilyItem', async (req, res) => {
   try {
     await createFamilyItem(config.items.Andersen);
-    res.status(200).send('Family added successfully.');
+    res.status(200).json({ message: 'Family added successfully.' });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error adding Family.');
+    res.status(500).json({ message: 'Error adding Family.' });
   }
 });
 
 // Define the endpoint that triggers deleteFamilyItem
 app.get('/deleteFamilyItem', async (req, res) => {
   try {
-    await deleteFamilyItem(config.items.Andersen);
-    res.status(200).send('Family deleted successfully.');
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error deleting Family.');
+    const itemBody = {
+      id: req.query.id, // The ID of the item to delete
+      partitionKey: "w.kirjanovs@realest-ai.com", // Since the item doesn't have a partitionKey
+    };
+    await deleteFamilyItem(itemBody);
+    res.status(200).json({ message: 'Family deleted successfully.' });
+    } catch (error) {
+    console.error('Error deleting item:', error);
+    res.status(500).json({ message: 'Error deleting Family.' });
   }
 });
 
@@ -227,10 +231,10 @@ app.get('/deleteFamilyItem', async (req, res) => {
 app.get('/queryContainer', async (req, res) => {
   try {
     await queryContainer();
-    res.status(200).send('Query executed successfully.');
+    res.status(200).json({ message: 'Query executed successfully.' });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error executing query.');
+    res.status(500).json({ message: 'Error executing query.' });
   }
 });
 
@@ -282,6 +286,7 @@ app.get('/fetchLocation', async (req, res) => {
   if (emails.length > 0) {
     res.status(200).json({ location: emails[0].location });
   } else {
+    res.status(404).json({ message: 'Location not found.' });
   }
 });
 
@@ -296,9 +301,9 @@ app.get('/fetchName', async (req, res) => {
   if (emails.length > 0) {
     res.status(200).json({ objectname: emails[0].objectname });
   } else {
+    res.status(404).json({ message: 'Name not found.' });
   }
 });
-
 
 // Define the endpoint that fetches the customer profile from CosmosDB based on outlookEmailId
 app.get('/fetchCustomerProfile', async (req, res) => {
@@ -311,6 +316,7 @@ app.get('/fetchCustomerProfile', async (req, res) => {
   if (emails.length > 0) {
     res.status(200).json({ customerProfile: emails[0].customerProfile });
   } else {
+    res.status(404).json({ message: 'Customer profile not found.' });
   }
 });
 
@@ -324,10 +330,9 @@ app.get('/fetchDocument', async (req, res) => {
   if (emails.length > 0) {
     res.status(200).json(emails[0]);
   } else {
-    res.status(404).send('Document not found.');
+    res.status(404).json({ message: 'Document not found.' });
   }
 });
-
 
 // Start the server
 app.listen(port, () => {
