@@ -186,6 +186,31 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
     };
   }, []);
 
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    const pollForEmailUpdate = async () => {
+      const customerProfile = await fetchCustomerProfileFromBackend(emailId);
+      const objectname = await fetchObjectNameFromCosmosDB(emailId);
+
+      if (customerProfile && objectname) {
+        // Update the state with new data
+        setCustomerProfile(customerProfile);
+        setPropertyName(objectname);
+        
+        // Clear the polling interval once the email is fetched
+        clearInterval(intervalId);
+      }
+    };
+
+    // Start polling every 2 seconds
+    intervalId = setInterval(pollForEmailUpdate, 2000);
+
+    return () => {
+      // Clean up the interval on component unmount
+      clearInterval(intervalId);
+    };
+  }, [emailId]);
 
   return (
     <FluentProvider theme={webLightTheme}>
