@@ -5,7 +5,7 @@ const port = process.env.PORT || 3001;
 
 // Enable CORS
 app.use(cors({
-  origin: ['https://localhost:3000', 'https://officefronten.z6.web.core.windows.net'],
+  origin: ['https://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Include this if you need to send cookies or authorization headers
