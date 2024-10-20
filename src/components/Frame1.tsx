@@ -277,7 +277,6 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
           const customerProfile = await determineCustomerProfile(email.body.content);
   
           const emailData = {
-            emailBody: email.body.content,
             subject: email.subject,
             userId: email.from.emailAddress.address,
             receivedAt: email.receivedDateTime,
@@ -286,6 +285,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
             objectname: name,
             customerProfile: customerProfile,
             outlookEmailId: email.id,
+            emailBody: email.body.content,
           };
   
           // Upload to CosmosDB only if the email doesn't already exist
