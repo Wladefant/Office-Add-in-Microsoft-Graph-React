@@ -334,6 +334,44 @@ app.get('/fetchDocument', async (req, res) => {
   }
 });
 
+// Endpoint to fetch emails with empty folder
+app.get('/fetchEmailsWithEmptyFolder', async (req, res) => {
+  const querySpec = {
+    query: 'SELECT * FROM c WHERE c.folder = ""',
+  };
+
+  try {
+    const { resources: emails } = await client
+      .database(databaseId)
+      .container('Emails')
+      .items.query(querySpec)
+      .fetchAll();
+    
+    res.status(200).json(emails);
+  } catch (error) {
+    console.error('Error fetching emails with empty folder:', error);
+    res.status(500).json({ message: 'Error fetching emails.'});
+  }
+});
+
+// Endpoint to update the folder field of an email
+app.post('/updateEmailFolder', async (req, res) => {
+  const { id, userId, folder } = req.body;  // Extract the email ID, userId, and new folder name
+  try {
+    const { item } = await client
+      .database(databaseId)
+      .container('Emails')
+      .item(id, userId)
+      .replace({ ...req.body, folder: folder });
+
+    res.status(200).json({ message: 'Folder updated successfully.' });
+  } catch (error) {
+    console.error('Error updating folder:', error);
+    res.status(500).json({ message: 'Error updating folder.'});
+  }
+});
+
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

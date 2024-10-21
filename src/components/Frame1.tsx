@@ -253,6 +253,69 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       return "Error fetching customer profile.";
     }
   };
+
+  const updateEmailFolders = async () => {
+    try {
+      // Get the REST-formatted ID of the current email
+      const restId = Office.context.mailbox.convertToRestId(
+        Office.context.mailbox.item.itemId,
+        Office.MailboxEnums.RestVersion.v2_0
+      );
+  
+      // Fetch the current email details (location and objectname)
+      const currentEmailLocation = await fetchLocationFromCosmosDB(restId);
+      const currentEmailObjectName = await fetchNameFromCosmosDB(restId);
+  
+      // Fetch all emails with an empty folder field
+      const response = await fetch('https://cosmosdbbackendplugin.azurewebsites.net/fetchEmailsWithEmptyFolder');
+      const emailsWithoutFolder = await response.json();
+  
+      // Use OpenAI GPT to analyze if they match with the current email based on location and objectname
+      const configuration = new Configuration({
+        apiKey: OPENAI_API_KEY,
+      });
+      const openai = new OpenAIApi(configuration);
+  
+      const folderName = `Folder_${currentEmailLocation}_${currentEmailObjectName}`;
+  
+      for (const email of emailsWithoutFolder) {
+        const gptResponse = await openai.createChatCompletion({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You are an assistant tasked with matching emails based on location and object name."
+            },
+            {
+              role: "user",
+              content: `Does the combination of location (${currentEmailLocation}) and object name (${currentEmailObjectName}) match the following email's details? Location: ${email.location}, Object Name: ${email.objectname}. Reply with 'yes' or 'no'.`
+            }
+          ],
+          max_tokens: 10
+        });
+  
+        const matchResult = gptResponse.data.choices[0].message.content.trim();
+  
+        if (matchResult.toLowerCase() === 'yes') {
+          // Update the folder field for this email if it matches
+          const updatedEmail = { ...email, folder: folderName };
+  
+          await fetch('https://cosmosdbbackendplugin.azurewebsites.net/updateEmailFolder', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedEmail),
+          });
+  
+          console.log(`Updated email ${email.id} with folder ${folderName}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating email folders:', error);
+    }
+  };
+  
   const handleAnalyseClick = async () => {
     try {
       // Fetch emails from the Graph API
@@ -281,6 +344,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
             userId: email.from.emailAddress.address,
             receivedAt: email.receivedDateTime,
             sent: false,
+            folder: "",
             location: location,
             objectname: name,
             customerProfile: customerProfile,
@@ -314,7 +378,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       displayError(error.toString());
     }
   
-    await changeIDanduploademail();
+    await updateEmailFolders();
   };
   
 
