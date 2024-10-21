@@ -13,7 +13,7 @@ import OPENAI_API_KEY from "../../config/openaiKey";
 import MarkdownCard from "./MarkdownCard";
 
 interface Frame1Props {
-  switchToFrame2: () => void;
+  switchToFrame2: (requestInput: string) => void;
   displayError: (error: string) => void;
   accessToken: string;
 }
@@ -506,7 +506,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
           style={{ width: "100%" }}
           onClick={() => {
             handleAnalyseClick();
-            switchToFrame2();
+            switchToFrame2(requestInput); 
           }}
         >
           Analyse durchführen

@@ -15,9 +15,10 @@ import axios from "axios";
 interface Frame2Props {
   switchToFrame3: () => void;
   accessToken: string;
+  requestInput: string;
 }
 
-const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
+const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken, requestInput }) => {
   // State for the dynamic values
   const [propertyName, setPropertyName] = useState("Immobilie XXX");
   const [requestsInfo, setRequestsInfo] = useState("XXX der XXX Anfragen treffen auf die Profilbeschreibung zu");
@@ -120,16 +121,36 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
       }
   
       // Fetch all emails with the same folder name from Cosmos DB
-      const emails = await fetchEmailsByFolderName(folderName);
+      let emails = await fetchEmailsByFolderName(folderName);
   
       if (!emails || emails.length === 0) {
         console.log(`No emails found with folder name: ${folderName}`);
         return;
       }
-  
-      // For each email, create a draft reply and move it to the folder
-      for (const email of emails) {
-        await createDraftReplyForEmail(email.outlookEmailId, folderId);
+
+      // Parse requestInput to get the number of accepted emails
+      const numberOfAcceptedEmails = parseInt(requestInput, 10);
+
+      if (isNaN(numberOfAcceptedEmails) || numberOfAcceptedEmails < 0) {
+        console.error("Invalid number in requestInput");
+        return;
+      }
+
+      // Sort emails by rating in descending order
+      emails.sort((a, b) => b.rating - a.rating);
+
+      // Split the emails into accepted and rejected arrays
+      const acceptedEmails = emails.slice(0, numberOfAcceptedEmails);
+      const rejectedEmails = emails.slice(numberOfAcceptedEmails);
+
+      // For accepted emails, create drafts with confirmationTemplate
+      for (const email of acceptedEmails) {
+        await createDraftReplyForEmail(email.outlookEmailId, folderId, confirmationTemplate);
+      }
+
+      // For rejected emails, create drafts with rejectionTemplate
+      for (const email of rejectedEmails) {
+        await createDraftReplyForEmail(email.outlookEmailId, folderId, rejectionTemplate);
       }
   
       console.log("Draft replies created and moved to the folder.");
@@ -209,13 +230,13 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
     }
   };
 
-  const createDraftReplyForEmail = async (emailId: string, folderId: string) => {
+  const createDraftReplyForEmail = async (emailId: string, folderId: string, template: string) => {
     try {
-      // Create the draft reply
+      // Create the draft reply with the provided template
       const createDraftResponse = await axios.post(
         `https://graph.microsoft.com/v1.0/me/messages/${emailId}/createReply`,
         {
-          comment: "Your reply here", // Customize the reply content as needed
+          comment: template,
         },
         {
           headers: {
@@ -227,7 +248,7 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
   
       const draftMessageId = createDraftResponse.data.id;
   
-      // Move the draft to the folder
+      // Move the draft to the specified folder
       await axios.post(
         `https://graph.microsoft.com/v1.0/me/messages/${draftMessageId}/move`,
         {

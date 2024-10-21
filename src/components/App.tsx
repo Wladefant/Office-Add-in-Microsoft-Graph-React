@@ -27,6 +27,7 @@ export interface AppState {
   headerMessage?: string;
   errorMessage?: string;
   currentFrame: string;
+  requestInput?: string; // Added this line
 }
 
 export default class App extends React.Component<AppProps, AppState> {
@@ -245,9 +246,11 @@ export default class App extends React.Component<AppProps, AppState> {
     this.setState({ currentFrame: "Frame1" });
   };
 
-  switchToFrame2 = () => {
-    this.setState({ currentFrame: "Frame2" });
+// Modify `switchToFrame2` to accept `requestInput`
+    switchToFrame2 = (requestInput: string) => {
+    this.setState({ currentFrame: "Frame2", requestInput });
   };
+
 
   switchToFrame3 = () => {
     this.setState({ currentFrame: "Frame3" });
@@ -272,7 +275,13 @@ export default class App extends React.Component<AppProps, AppState> {
     if (this.state.currentFrame === "Frame1") {
       body = <Frame1 switchToFrame2={this.switchToFrame2} displayError={this.displayError} accessToken={this.accessToken} />;
     } else if (this.state.currentFrame === "Frame2") {
-      body = <Frame2 switchToFrame3={this.switchToFrame3} accessToken={this.accessToken} />;
+      body = 
+        <Frame2
+          switchToFrame3={this.switchToFrame3}
+          accessToken={this.accessToken}
+          requestInput={this.state.requestInput} // Pass `requestInput` here
+        />
+      ;
     } else if (this.state.currentFrame === "Frame3") {
       body = <Frame3 />;
     } else if (this.state.authStatus === "notLoggedIn") {
