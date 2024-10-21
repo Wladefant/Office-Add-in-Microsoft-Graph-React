@@ -130,6 +130,44 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     }
   };
 
+  const extractRating = async (customerProfileText) => {
+    const configuration = new Configuration({
+      apiKey: OPENAI_API_KEY,
+    });
+    const openai = new OpenAIApi(configuration);
+  
+    try {
+      const response = await openai.createChatCompletion({
+        model: "gpt-4o-mini", // Use a model accessible with your API key
+        messages: [
+          {
+            role: "system",
+            content: "Du bist ein hilfreicher Assistent, der die Bewertung aus einem Text extrahiert.",
+          },
+          {
+            role: "user",
+            content: `Extrahiere die Bewertung auf einer Skala von 1 bis 10 aus dem folgenden Text. Gib nur die Zahl als Antwort zurück. Text: "${customerProfileText}"`,
+          },
+        ],
+        max_tokens: 5,
+      });
+  
+      if (response.data.choices && response.data.choices[0].message) {
+        const ratingText = response.data.choices[0].message.content.trim();
+        const rating = parseFloat(ratingText);
+        if (isNaN(rating)) {
+          throw new Error("Rating is not a number");
+        }
+        return rating;
+      } else {
+        throw new Error("Unexpected API response structure");
+      }
+    } catch (error) {
+      console.error("Error extracting rating:", error);
+      return null; // Return null or a default value if extraction fails
+    }
+  };
+  
 
   const checkEmailExistsInCosmosDB = async (outlookEmailId: string) => {
     try {
@@ -332,31 +370,37 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
   
       // Process each email
       for (const email of emails) {
-        const emailExists = await checkEmailExistsInCosmosDB(email.id);
-        if (!emailExists) {
-          // Extract details if the email does not exist
-          const location = await determineLocation(email.body.content);
-          const name = await determineName(email.body.content);
-          const customerProfile = await determineCustomerProfile(email.body.content);
+        try {
+          const emailExists = await checkEmailExistsInCosmosDB(email.id);
+          if (!emailExists) {
+            // Extract details if the email does not exist
+            const location = await determineLocation(email.body.content);
+            const name = await determineName(email.body.content);
+            const customerProfile = await determineCustomerProfile(email.body.content);
+            const rating = await extractRating(customerProfile);
   
-          const emailData = {
-            subject: email.subject,
-            userId: email.from.emailAddress.address,
-            receivedAt: email.receivedDateTime,
-            sent: false,
-            folder: "",
-            location: location,
-            objectname: name,
-            customerProfile: customerProfile,
-            outlookEmailId: email.id,
-            emailBody: email.body.content,
-          };
+            const emailData = {
+              subject: email.subject,
+              userId: email.from.emailAddress.address,
+              receivedAt: email.receivedDateTime,
+              sent: false,
+              folder: "",
+              location: location,
+              objectname: name,
+              customerProfile: customerProfile,
+              rating: rating,
+              outlookEmailId: email.id,
+              emailBody: email.body.content,
+            };
   
-          // Upload to CosmosDB only if the email doesn't already exist
-          await uploadEmailToCosmosDB(emailData);
-          console.log(`Uploaded email: ${email.id}`);
-        } else {
-          console.log(`Email ${email.id} already exists, skipping upload.`);
+            // Upload to CosmosDB
+            await uploadEmailToCosmosDB(emailData);
+            console.log(`Uploaded email: ${email.id}`);
+          } else {
+            console.log(`Email ${email.id} already exists, skipping upload.`);
+          }
+        } catch (error) {
+          console.error(`Error processing email ${email.id}:`, error);
         }
       }
   
@@ -374,6 +418,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
         // If no item is available, display a different message
         displayError("Emails processed successfully. No email is currently open.");
       }
+  
     } catch (error) {
       displayError(error.toString());
     }
