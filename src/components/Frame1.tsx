@@ -97,6 +97,8 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
     }
   };
 
+// Inside Frame1.tsx
+
   const determineCustomerProfile = async (emailContent: string) => {
     const configuration = new Configuration({
       apiKey: OPENAI_API_KEY,
@@ -109,11 +111,12 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
         messages: [
           {
             role: "system",
-            content: "Du bist ein hilfreicher Assistent, der E-Mails zusammenfasst und Mieter anhand ihres Profils bewertet.",
+            content:
+              "Du bist ein hilfreicher Assistent, der E-Mails zusammenfasst und Mieter anhand ihres Profils bewertet.",
           },
           {
             role: "user",
-            content: `Gib eine kurze, strukturierte Beschreibung zu dem Mieter auf Deutsch und bewerte den Mieter auf einer Skala von 1 bis 10, wobei 10 der wünschenswerteste Mieter ist.  Keine Titel oder Sonstiges, strukuriert und kompakt in Stickpunkten: ${emailContent}`,
+            content: `Basierend auf den folgenden Kriterien für den perfekten Kunden: "${perfectCustomerProfile}", gib eine kurze, strukturierte Beschreibung zu dem Mieter auf Deutsch und bewerte den Mieter auf einer Skala von 1 bis 10, wobei 10 der wünschenswerteste Mieter ist. Keine Titel oder Sonstiges, strukturiert und kompakt in Stichpunkten: ${emailContent}`,
           },
         ],
         max_tokens: 200,
@@ -129,6 +132,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       return "Error generating summary.";
     }
   };
+
 
   const extractRating = async (customerProfileText) => {
     const configuration = new Configuration({
