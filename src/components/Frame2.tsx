@@ -103,19 +103,119 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
   // Function to create a draft reply and move it to the "akzeptiert" folder
   const createDraftReplyAndMove = async () => {
     try {
-      // Ensure the "akzeptiert" folder exists and get its ID
-      const akzeptiertFolderId = await ensureAkzeptiertFolderExists();
-
-      if (!akzeptiertFolderId) {
-        console.error("Could not obtain 'akzeptiert' folder ID.");
+      // Fetch the folder name from Cosmos DB for the current email
+      const folderName = await fetchFolderNameFromBackend(emailId);
+  
+      if (!folderName) {
+        console.error("Could not obtain folder name from Cosmos DB.");
         return;
       }
+  
+      // Ensure the folder exists and get its ID
+      const folderId = await ensureFolderExists(folderName);
+  
+      if (!folderId) {
+        console.error(`Could not obtain folder ID for folder: ${folderName}`);
+        return;
+      }
+  
+      // Fetch all emails with the same folder name from Cosmos DB
+      const emails = await fetchEmailsByFolderName(folderName);
+  
+      if (!emails || emails.length === 0) {
+        console.log(`No emails found with folder name: ${folderName}`);
+        return;
+      }
+  
+      // For each email, create a draft reply and move it to the folder
+      for (const email of emails) {
+        await createDraftReplyForEmail(email.outlookEmailId, folderId);
+      }
+  
+      console.log("Draft replies created and moved to the folder.");
+  
+      // Switch to Frame3
+      switchToFrame3();
+    } catch (error) {
+      console.error("Error creating draft replies:", error);
+    }
+  };
+  
 
+  const fetchFolderNameFromBackend = async (outlookEmailId: string) => {
+    try {
+      const encodedEmailId = encodeURIComponent(outlookEmailId);
+      const response = await fetch(
+        `https://cosmosdbbackendplugin.azurewebsites.net/fetchFolderName?outlookEmailId=${encodedEmailId}`
+      );
+      const result = await response.json();
+      return result.folderName;
+    } catch (error) {
+      console.error("Error fetching folder name from backend:", error);
+      return null;
+    }
+  };
+  
+  const ensureFolderExists = async (folderName: string): Promise<string | null> => {
+    try {
+      // Check if the folder exists
+      const response = await axios.get(
+        "https://graph.microsoft.com/v1.0/me/mailFolders",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+  
+      const folders = response.data.value;
+      let folder = folders.find((f: any) => f.displayName === folderName);
+  
+      if (folder) {
+        // Folder exists, return its ID
+        return folder.id;
+      } else {
+        // Folder doesn't exist, create it
+        const createFolderResponse = await axios.post(
+          "https://graph.microsoft.com/v1.0/me/mailFolders",
+          {
+            displayName: folderName,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        return createFolderResponse.data.id;
+      }
+    } catch (error) {
+      console.error(`Error ensuring folder '${folderName}' exists:`, error);
+      return null;
+    }
+  };
+  const fetchEmailsByFolderName = async (folderName: string) => {
+    try {
+      const encodedFolderName = encodeURIComponent(folderName);
+      const response = await fetch(
+        `https://cosmosdbbackendplugin.azurewebsites.net/fetchEmailsByFolderName?folderName=${encodedFolderName}`
+      );
+      const emails = await response.json();
+      return emails;
+    } catch (error) {
+      console.error("Error fetching emails by folder name:", error);
+      return [];
+    }
+  };
+
+  const createDraftReplyForEmail = async (emailId: string, folderId: string) => {
+    try {
       // Create the draft reply
       const createDraftResponse = await axios.post(
         `https://graph.microsoft.com/v1.0/me/messages/${emailId}/createReply`,
         {
-          comment: "akzeptiert",
+          comment: "Your reply here", // Customize the reply content as needed
         },
         {
           headers: {
@@ -124,14 +224,14 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
           },
         }
       );
-
+  
       const draftMessageId = createDraftResponse.data.id;
-
-      // Move the draft to the "akzeptiert" folder
+  
+      // Move the draft to the folder
       await axios.post(
         `https://graph.microsoft.com/v1.0/me/messages/${draftMessageId}/move`,
         {
-          destinationId: akzeptiertFolderId,
+          destinationId: folderId,
         },
         {
           headers: {
@@ -140,15 +240,13 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken }) => {
           },
         }
       );
-
-      console.log("Draft reply created and moved to 'akzeptiert' folder.");
-
-      // Switch to Frame3
-      switchToFrame3();
+  
+      console.log(`Draft reply for email ${emailId} created and moved.`);
     } catch (error) {
-      console.error("Error creating draft reply:", error);
+      console.error(`Error creating draft reply for email ${emailId}:`, error);
     }
   };
+  
   
   useEffect(() => {
     const fetchEmailContent = async () => {

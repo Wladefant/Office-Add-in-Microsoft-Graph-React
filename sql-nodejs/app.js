@@ -371,6 +371,48 @@ app.post('/updateEmailFolder', async (req, res) => {
   }
 });
 
+// Endpoint to fetch the folder name from Cosmos DB based on outlookEmailId
+app.get('/fetchFolderName', async (req, res) => {
+  const outlookEmailId = req.query.outlookEmailId;
+  const querySpec = {
+    query: 'SELECT c.folder FROM c WHERE c.outlookEmailId = @outlookEmailId',
+    parameters: [{ name: '@outlookEmailId', value: outlookEmailId }],
+  };
+  const { resources: emails } = await client
+    .database(databaseId)
+    .container('Emails')
+    .items.query(querySpec)
+    .fetchAll();
+  if (emails.length > 0) {
+    res.status(200).json({ folderName: emails[0].folder });
+  } else {
+    res.status(404).json({ message: 'Folder name not found.' });
+  }
+});
+
+// Endpoint to fetch emails by folder name
+app.get('/fetchEmailsByFolderName', async (req, res) => {
+  const folderName = req.query.folderName;
+  const querySpec = {
+    query: 'SELECT c.outlookEmailId FROM c WHERE c.folder = @folderName',
+    parameters: [{ name: '@folderName', value: folderName }],
+  };
+
+  try {
+    const { resources: emails } = await client
+      .database(databaseId)
+      .container('Emails')
+      .items.query(querySpec)
+      .fetchAll();
+
+    res.status(200).json(emails);
+  } catch (error) {
+    console.error('Error fetching emails by folder name:', error);
+    res.status(500).json({ message: 'Error fetching emails.' });
+  }
+});
+
+
 
 // Start the server
 app.listen(port, () => {
