@@ -353,6 +353,37 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       console.error('Error updating email folders:', error);
     }
   };
+
+  // Add these functions to Frame1.tsx
+
+const fetchFolderNameFromBackend = async (outlookEmailId: string) => {
+  try {
+    const encodedEmailId = encodeURIComponent(outlookEmailId);
+    const response = await fetch(
+      `https://cosmosdbbackendplugin.azurewebsites.net/fetchFolderName?outlookEmailId=${encodedEmailId}`
+    );
+    const result = await response.json();
+    return result.folderName;
+  } catch (error) {
+    console.error("Error fetching folder name from backend:", error);
+    return null;
+  }
+};
+
+const fetchEmailsByFolderName = async (folderName: string) => {
+  try {
+    const encodedFolderName = encodeURIComponent(folderName);
+    const response = await fetch(
+      `https://cosmosdbbackendplugin.azurewebsites.net/fetchEmailsByFolderName?folderName=${encodedFolderName}`
+    );
+    const emails = await response.json();
+    return emails;
+  } catch (error) {
+    console.error("Error fetching emails by folder name:", error);
+    return [];
+  }
+};
+
   
   const handleAnalyseClick = async () => {
     try {
@@ -452,9 +483,18 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
 
         const customerProfile = await fetchCustomerProfileFromBackend(restId);
         setCustomerProfile(customerProfile);
+
+      // Fetch the folder name and emails with the same folder
+      const folderName = await fetchFolderNameFromBackend(restId);
+      if (folderName) {
+        const emails = await fetchEmailsByFolderName(folderName);
+        setRequests(emails.length.toString()); // Update requests with the number of emails
+      } else {
+        setRequests("0");
       }
-    };
-  
+    }
+  };
+
     fetchEmailContent();
 
     const itemChangedHandler = () => {
@@ -467,7 +507,7 @@ const Frame1: React.FC<Frame1Props> = ({ switchToFrame2, displayError, accessTok
       Office.context.mailbox.removeHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
     };
   }, []);
-  
+
 
   return (
     <FluentProvider theme={webLightTheme}>

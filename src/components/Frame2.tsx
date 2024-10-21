@@ -283,6 +283,19 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken, requestInp
         setCustomerProfile(customerProfile);
         const objectname = await fetchObjectNameFromCosmosDB(restId);
         setPropertyName(objectname);
+
+        // Fetch folder name and number of emails with the same folder
+        const folderName = await fetchFolderNameFromBackend(restId);
+        if (folderName) {
+          const emails = await fetchEmailsByFolderName(folderName);
+          const numberOfEmails = emails.length;
+
+          // Parse requestInput to get the number of accepted emails
+          const numberOfAcceptedEmails = parseInt(requestInput, 10) || 0;
+          setRequestsInfo(`${numberOfAcceptedEmails} der ${numberOfEmails} Anfragen treffen auf die Profilbeschreibung zu`);
+        } else {
+          setRequestsInfo(`0 der 0 Anfragen treffen auf die Profilbeschreibung zu`);
+        }
       }
     };
 
@@ -303,7 +316,8 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken, requestInp
         itemChangedHandler
       );
     };
-  }, []);
+  }, [emailId, requestInput]);
+
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
