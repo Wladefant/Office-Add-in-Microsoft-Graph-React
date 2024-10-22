@@ -283,7 +283,11 @@ export default class App extends React.Component<AppProps, AppState> {
         />
       ;
     } else if (this.state.currentFrame === "Frame3") {
-      body = <Frame3 />;
+      body = 
+        <Frame3
+          accessToken={this.accessToken}
+          requestInput={this.state.requestInput}
+        />
     } else if (this.state.authStatus === "notLoggedIn") {
       body = <StartPageBody login={this.login} listItems={this.listItems} />;
     } else if (this.state.authStatus === "loginInProcess") {

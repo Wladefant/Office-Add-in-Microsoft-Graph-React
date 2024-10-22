@@ -13,7 +13,7 @@ import OPENAI_API_KEY from "../../config/openaiKey";
 import axios from "axios";
 
 interface Frame2Props {
-  switchToFrame3: () => void;
+  switchToFrame3: (requestInput ) => void;
   accessToken: string;
   requestInput: string;
 }
@@ -156,7 +156,7 @@ const Frame2: React.FC<Frame2Props> = ({ switchToFrame3, accessToken, requestInp
       console.log("Draft replies created and moved to the folder.");
   
       // Switch to Frame3
-      switchToFrame3();
+      switchToFrame3(requestInput);
     } catch (error) {
       console.error("Error creating draft replies:", error);
     }
