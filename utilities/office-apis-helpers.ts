@@ -1,3 +1,5 @@
+// office-apis-helpers.ts
+
 import { AppState } from '../src/components/App';
 import { AxiosResponse } from 'axios';
 
@@ -25,10 +27,12 @@ export const writeFileNamesToEmail = async (
 let loginDialog: Office.Dialog;
 const dialogLoginUrl: string = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + '/login/login.html';
 
-export const signInO365 = (setState: (x: AppState) => void,
+export const signInO365 = (
+    setState: (x: AppState) => void,
     setToken: (x: string) => void,
     setUserName: (x: string) => void,
-    displayError: (x: string) => void) => {
+    displayError: (x: string) => void
+) => {
 
     setState({ authStatus: 'loginInProcess', currentFrame: 'default' });
 
@@ -38,8 +42,7 @@ export const signInO365 = (setState: (x: AppState) => void,
         (result) => {
             if (result.status === Office.AsyncResultStatus.Failed) {
                 displayError(`${result.error.code} ${result.error.message}`);
-            }
-            else {
+            } else {
                 loginDialog = result.value;
                 loginDialog.addEventHandler(Office.EventType.DialogMessageReceived, processLoginMessage);
                 loginDialog.addEventHandler(Office.EventType.DialogEventReceived, processLoginDialogEvent);
@@ -47,7 +50,7 @@ export const signInO365 = (setState: (x: AppState) => void,
         }
     );
 
-    const processLoginMessage = (arg: { message: string, origin: string }) => {
+    const processLoginMessage = (arg: { message: string; origin: string }) => {
         // Confirm origin is correct.
         if (arg.origin !== window.location.origin) {
             throw new Error("Incorrect origin passed to processLoginMessage.");
@@ -62,11 +65,9 @@ export const signInO365 = (setState: (x: AppState) => void,
             setUserName(messageFromDialog.userName);
             setState({
                 authStatus: 'loggedIn',
-                headerMessage: 'Get Data',
                 currentFrame: 'Frame1'
             });
-        }
-        else {
+        } else {
             // Something went wrong with authentication or the authorization of the web application.
             loginDialog.close();
             displayError(messageFromDialog.result);
@@ -86,18 +87,19 @@ function delay(milliSeconds: number) {
     return new Promise(resolve => setTimeout(resolve, milliSeconds));
 }
 
-export const logoutFromO365 = async (setState: (x: AppState) => void,
+export const logoutFromO365 = async (
+    setState: (x: AppState) => void,
     setUserName: (x: string) => void,
     userName: string,
-    displayError: (x: string) => void) => {
+    displayError: (x: string) => void
+) => {
 
     Office.context.ui.displayDialogAsync(dialogLogoutUrl,
         { height: 40, width: 30 },
         async (result) => {
             if (result.status === Office.AsyncResultStatus.Failed) {
                 displayError(`${result.error.code} ${result.error.message}`);
-            }
-            else {
+            } else {
                 logoutDialog = result.value;
                 logoutDialog.addEventHandler(Office.EventType.DialogMessageReceived, processLogoutMessage);
                 logoutDialog.addEventHandler(Office.EventType.DialogEventReceived, processLogoutDialogEvent);
@@ -111,7 +113,6 @@ export const logoutFromO365 = async (setState: (x: AppState) => void,
         logoutDialog.close();
         setState({
             authStatus: 'notLoggedIn',
-            headerMessage: 'Welcome',
             currentFrame: 'default'
         });
         setUserName('');
@@ -122,9 +123,11 @@ export const logoutFromO365 = async (setState: (x: AppState) => void,
     };
 };
 
-const processDialogEvent = (arg: { error: number, type: string },
+const processDialogEvent = (
+    arg: { error: number; type: string },
     setState: (x: AppState) => void,
-    displayError: (x: string) => void) => {
+    displayError: (x: string) => void
+) => {
 
     switch (arg.error) {
         case 12002:
@@ -140,7 +143,6 @@ const processDialogEvent = (arg: { error: number, type: string },
             // press the login button again even if the user is logged in.
             setState({
                 authStatus: 'notLoggedIn',
-                headerMessage: 'Welcome',
                 currentFrame: 'default'
             });
             break;
