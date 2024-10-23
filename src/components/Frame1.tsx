@@ -555,22 +555,22 @@ const fetchEmailsByFolderName = async (folderName: string) => {
     <FluentProvider theme={webLightTheme}>
       <div style={{ padding: "20px", width: "calc(100% - 40px)", margin: "0 auto" }}>
         
-        <MarkdownCard markdown={`**Ort:** ${location}\n\n**Name:** ${name}\n\n **${requests}** Anfragen gefunden.`} />
+        <MarkdownCard markdown={`**Objekt:** ${name}\n\n**Ort:** ${location}\n\n Anzahl Anfragen: **${requests}**`} />
 
         <Textarea
           placeholder="Beschreiben sie die Voraussetzungen für den perfekten Kunden"
           value={perfectCustomerProfile}
           onChange={(e) => setPerfectCustomerProfile(e.target.value)}
           style={{
-            marginBottom: '20px',
-            width: '100%', // Ensure the input takes the full width of its container
-            height: '100px', // Fixed height to allow for multiple lines
+        marginBottom: '20px',
+        width: '100%', // Ensure the input takes the full width of its container
+        height: '100px', // Fixed height to allow for multiple lines
           }}
         />
         <MarkdownCard markdown={customerProfile} />
 
         <Text style={{ fontSize: "16px", marginBottom: "10px" }}>
-          Anzahl der akzeptierten Anfragen:
+          Wieviele Mieteranfragen willst du zulassen?:
         </Text>
         <Input
           placeholder="Geben sie ein Zahl ein"
