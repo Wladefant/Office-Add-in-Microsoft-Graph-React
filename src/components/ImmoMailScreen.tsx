@@ -1,4 +1,3 @@
-// ImmoMailScreen.tsx
 import * as React from 'react';
 import { Stack, Text, PrimaryButton } from '@fluentui/react';
 
@@ -6,76 +5,126 @@ interface ImmoMailScreenProps {
   login: () => void;
 }
 
-const ImmoMailScreen: React.FunctionComponent<ImmoMailScreenProps> = ({ login }) => {
+const ImmoMailScreen: React.FC<ImmoMailScreenProps> = ({ login }) => {
   return (
     <Stack
       verticalAlign="center"
       horizontalAlign="center"
       styles={{
         root: {
-          height: '100vh',
+          height: '100vh', // Full viewport height to center vertically
           backgroundColor: '#ffffff',
         },
       }}
+      tokens={{ childrenGap: 20 }} // Adds space between each child in the stack
     >
-      {/* Icon */}
-      <Stack.Item>
-        <img
-          src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMyIiBoZWlnaHQ9IjEyNSIgdmlld0JveD0iMCAwIDEzMiAxMjUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMF85OV84MCkiPgo8cGF0aCBkPSJNMTI0LjU5MiAxMjIuMzE1SDcuNDA4MTZDNC44MDg1NyAxMjIuMzE1IDIuNjkzODggMTIwLjIwNyAyLjY5Mzg4IDExNy42MTZWNTAuNzU5OUMyLjY5Mzg4IDQ5LjMyMzQgMy4zNTM4OCA0Ny45NTQgNC40OTg3OCA0Ny4wNjhMNTcuMTY0MSA1LjczMjQ3QzYyLjM0OTggMS42NjQ3IDY5LjY2MzcgMS42NjQ3IDc0Ljg0OTQgNS43MzI0N0wxMjcuNTE1IDQ3LjA1NDZDMTI4LjY0NiA0Ny45NDA2IDEyOS4zMiA0OS4zMSAxMjkuMzIgNTAuNzQ2NFYxMTcuNjAzQzEyOS4zMiAxMjAuMTk0IDEyNy4yMDUgMTIyLjMwMiAxMjQuNjA1IDEyMi4zMDJMMTI0LjU5MiAxMjIuMzE1WiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iIzIzMUYyMCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPHBhdGggZD0iTTQuMDQwODIgNDkuODJMNTIuNTMwNiA4Ni4wNjc1QzU0Ljc1MzEgODcuMTE0NiA1OC40OTc2IDg4LjUyNDMgNjMuMzA2MSA4OC43NTI1QzY5LjU1NTkgODkuMDQ3OCA3NC4zNzggODcuMTk1MiA3Ni43NzU1IDg2LjA2NzVDODcuNTM3NiA3OS4wMzI4IDEwNy43NTUgNjMuMTEwOCAxMjYuNjEyIDQ4LjQ3NzUiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00LjA0MDgyIDQ5LjgyTDUyLjUzMDYgODYuMDY3NUM1NC43NTMxIDg3LjExNDYgNTguNDk3NiA4OC41MjQzIDYzLjMwNjEgODguNzUyNUM2OS41NTU5IDg5LjA0NzggNzQuMzc4IDg3LjE5NTIgNzYuNzc1NSA4Ni4wNjc1Qzg3LjUzNzYgNzkuMDMyOCAxMDcuNzU1IDYzLjExMDggMTI2LjYxMiA0OC40Nzc1IiBzdHJva2U9IiMyMzFGMjAiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIi8+CjxwYXRoIGQ9Ik01LjM4Nzc2IDExOS42M0w1Ny45MTg0IDg3LjQxMDIiIHN0cm9rZT0iIzIzMUYyMCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPHBhdGggZD0iTTc0LjA4MTYgODcuNDEwMkwxMjcuOTU5IDEyMC45NzMiIHN0cm9rZT0iIzIzMUYyMCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPHBhdGggZD0iTTIyLjg5OCA4LjIwMjY0VjMxLjAyNTFNIzIzMUYyMCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPHBhdGggZD0iTTM5LjA2MTIgNi44NjAxMVYyMC4yODUxIiBzdHJva2U9IiMyMzFGMjAiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIi8+CjxwYXRoIGQ9Ik0yMC4yMDQxIDYuODYwMTFIMzkuMDQwOCIgZmlsbD0id2hpdGUiIHN0cm9rZT0iIzIzMUYyMCIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiLz4KPHBhdGggZD0iTTQuMDQwODIgNDkuODJMMTI2LjYxMiA0OC40Nzc1IiBzdHJva2U9IiMyMzFGMjAiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIi8+CjwvZz4KPC9zdmc+" // Embedded SVG data
-          alt="ImmoMail Icon"
-          width={100}
-          height={100}
-        />
-      </Stack.Item>
+      {/* Icon, Title, and Paragraph in a single vertical stack */}
+      <Stack verticalAlign="center" horizontalAlign="center" tokens={{ childrenGap: 15 }}>
+        {/* Icon */}
+        <svg
+          width="70"
+          height="70"
+          viewBox="0 0 132 125"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g clipPath="url(#clip0_99_80)">
+            <path
+              d="M124.592 122.315H7.40816C4.80857 122.315 2.69388 120.207 2.69388 117.616V50.7599C2.69388 49.3234 3.35388 47.954 4.49878 47.068L57.1641 5.73247C62.3498 1.6647 69.6637 1.6647 74.8494 5.73247L127.515 47.0546C128.646 47.9406 129.32 49.31 129.32 50.7464V117.603C129.32 120.194 127.205 122.302 124.605 122.302L124.592 122.315Z"
+              fill="white"
+              stroke="#231F20"
+              strokeWidth="4"
+              strokeMiterlimit="10"
+            />
+            <path
+              d="M4.04082 49.82L52.5306 86.0675C54.7531 87.1146 58.4976 88.5243 63.3061 88.7525C69.5559 89.0478 74.378 87.1952 76.7755 86.0675C87.5376 79.0328 107.755 63.1108 126.612 48.4775"
+              fill="white"
+            />
+            <path
+              d="M4.04082 49.82L52.5306 86.0675C54.7531 87.1146 58.4976 88.5243 63.3061 88.7525C69.5559 89.0478 74.378 87.1952 76.7755 86.0675C87.5376 79.0328 107.755 63.1108 126.612 48.4775"
+              stroke="#231F20"
+              strokeWidth="4"
+              strokeMiterlimit="10"
+            />
+            <path
+              d="M5.38776 119.63L57.9184 87.4102"
+              stroke="#231F20"
+              strokeWidth="4"
+              strokeMiterlimit="10"
+            />
+            <path
+              d="M74.0816 87.4102L127.959 120.973"
+              stroke="#231F20"
+              strokeWidth="4"
+              strokeMiterlimit="10"
+            />
+            <path
+              d="M22.898 8.20264V31.0251"
+              stroke="#231F20"
+              strokeWidth="4"
+              strokeMiterlimit="10"
+            />
+            <path
+              d="M39.0612 6.86011V20.2851"
+              stroke="#231F20"
+              strokeWidth="4"
+              strokeMiterlimit="10"
+            />
+            <path
+              d="M20.2041 6.86011H39.0408"
+              fill="white"
+              stroke="#231F20"
+              strokeWidth="4"
+              strokeMiterlimit="10"
+            />
+            <path
+              d="M4.04082 49.82L126.612 48.4775"
+              stroke="#231F20"
+              strokeWidth="4"
+              strokeMiterlimit="10"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_99_80">
+              <rect width="132" height="125" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
 
-      {/* Text */}
-      <Stack.Item>
+        {/* Title */}
         <Text variant="xLarge" styles={{ root: { fontWeight: 'bold' } }}>
           Willkommen bei <span style={{ color: '#231F20' }}>ImmoMail</span>
         </Text>
-      </Stack.Item>
-      <Stack.Item>
-        <Text variant="medium" styles={{ root: { textAlign: 'center', padding: '10px 0' } }}>
+
+        {/* Paragraph Text */}
+        <Text
+          variant="medium"
+          styles={{ root: { textAlign: 'center', fontSize: '14px' } }}
+        >
           Wir helfen dir deine Mieteranfragen innerhalb weniger Minuten abzuarbeiten!
         </Text>
-      </Stack.Item>
+      </Stack>
 
       {/* Button */}
-      <Stack.Item>
-        <PrimaryButton
-          text="Mit Office 365 Verbinden"
-          onClick={login}
-          styles={{
-            root: {
-              backgroundColor: '#000000',
-              borderColor: '#000000',
-              color: 'white',
-              fontSize: '16px',
-              padding: '12px 24px',
-              borderRadius: '5px',
-            },
-            rootHovered: {
-              backgroundColor: '#1a1a1a',
-              borderColor: '#1a1a1a',
-            },
-          }}
-        />
-      </Stack.Item>
-
-      {/* Feedback button (optional) */}
-      <Stack.Item
+      <PrimaryButton
+        text="Mit Office 365 Verbinden"
+        onClick={login}
         styles={{
           root: {
-            position: 'absolute',
-            bottom: '10px',
-            left: '10px',
-            color: '#999999',
-            cursor: 'pointer',
+            backgroundColor: '#000000',
+            borderColor: '#000000',
+            color: '#ffffff',
+            fontSize: '14px',
+            padding: '10px 20px',
+            borderRadius: '5px',
+            width: '240px',
+          },
+          rootHovered: {
+            backgroundColor: '#1a1a1a',
+            borderColor: '#1a1a1a',
           },
         }}
-      >
-        <Text variant="small">Feedback & Fragen</Text>
-      </Stack.Item>
+      />
     </Stack>
   );
 };
