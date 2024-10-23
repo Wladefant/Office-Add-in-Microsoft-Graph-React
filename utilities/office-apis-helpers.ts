@@ -63,7 +63,7 @@ export const signInO365 = (setState: (x: AppState) => void,
             setState({
                 authStatus: 'loggedIn',
                 headerMessage: 'Get Data',
-                currentFrame: 'default'
+                currentFrame: 'Frame1'
             });
         }
         else {

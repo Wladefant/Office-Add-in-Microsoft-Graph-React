@@ -16,6 +16,7 @@ import {
 import Frame1 from "./Frame1";
 import Frame2 from "./Frame2";
 import Frame3 from "./Frame3";
+import ImmoMailScreen from "./ImmoMailScreen";
 export interface AppProps {
   title: string;
   isOfficeInitialized: boolean;
@@ -289,7 +290,8 @@ export default class App extends React.Component<AppProps, AppState> {
           requestInput={this.state.requestInput}
         />
     } else if (this.state.authStatus === "notLoggedIn") {
-      body = <StartPageBody login={this.login} listItems={this.listItems} />;
+      // Replace StartPageBody with ImmoMailScreen
+      body = <ImmoMailScreen login={this.login} />;
     } else if (this.state.authStatus === "loginInProcess") {
       body = (
         <Spinner
