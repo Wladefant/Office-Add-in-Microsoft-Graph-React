@@ -5,10 +5,10 @@ const port = process.env.PORT || 3001;
 
 // Enable CORS
 app.use(cors({
-  origin: ['https://localhost:3000'],
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // Include this if you need to send cookies or authorization headers
+  credentials: false
 }));
 app.use(express.json()); // Add this line to parse JSON request bodies
 
