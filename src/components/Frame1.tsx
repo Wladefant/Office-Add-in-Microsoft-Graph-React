@@ -373,6 +373,18 @@ const fetchFolderNameFromBackend = async (outlookEmailId: string) => {
     return null;
   }
 };
+  
+const getEmailContent = async (): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    Office.context.mailbox.item.body.getAsync("text", (result) => {
+      if (result.status === Office.AsyncResultStatus.Succeeded) {
+        resolve(result.value);
+      } else {
+        reject(result.error);
+      }
+    });
+  });
+};
 
 const fetchEmailsByFolderName = async (folderName: string) => {
   try {
@@ -462,30 +474,55 @@ const fetchEmailsByFolderName = async (folderName: string) => {
   };
   
 
+  // Modify the useEffect hook
   useEffect(() => {
     const fetchEmailContent = async () => {
       console.log("fetching email content");
       if (Office.context.mailbox.item) {
         console.log("context is on email");
         console.log("Original Item ID:", Office.context.mailbox.item.itemId);
-  
+
         // Convert the item ID to REST format
         const restId = Office.context.mailbox.convertToRestId(
           Office.context.mailbox.item.itemId,
           Office.MailboxEnums.RestVersion.v2_0
         );
         console.log("REST-formatted Item ID:", restId);
-  
+
+        // Initialize emailContent as null
+        let emailContent: string | null = null;
+
         // Fetch the location using the REST-formatted ID
-        const location = await fetchLocationFromCosmosDB(restId);
+        let location = await fetchLocationFromCosmosDB(restId);
         console.log("Fetched Location:", location);
+        if (!location || location === "Error fetching location." || location === "") {
+          // If location not found in DB, fetch from OpenAI
+          if (!emailContent) {
+            emailContent = await getEmailContent();
+          }
+          location = await determineLocation(emailContent);
+        }
         setLocation(location);
 
-        const name = await fetchNameFromCosmosDB(restId);
+        let name = await fetchNameFromCosmosDB(restId);
         console.log("Fetched Name:", name);
+        if (!name || name === "Error fetching name." || name === "") {
+          // If name not found in DB, fetch from OpenAI
+          if (!emailContent) {
+            emailContent = await getEmailContent();
+          }
+          name = await determineName(emailContent);
+        }
         setName(name);
 
-        const customerProfile = await fetchCustomerProfileFromBackend(restId);
+        let customerProfile = await fetchCustomerProfileFromBackend(restId);
+        if (!customerProfile || customerProfile === "Error fetching customer profile.") {
+          // If customer profile not found in DB, fetch from OpenAI
+          if (!emailContent) {
+            emailContent = await getEmailContent();
+          }
+          customerProfile = await determineCustomerProfile(emailContent);
+        }
         setCustomerProfile(customerProfile);
 
       // Fetch the folder name and emails with the same folder
@@ -494,23 +531,24 @@ const fetchEmailsByFolderName = async (folderName: string) => {
         const emails = await fetchEmailsByFolderName(folderName);
         setRequests(emails.length.toString()); // Update requests with the number of emails
       } else {
-        setRequests("0");
+        setRequests("nicht gespeichert");
       }
     }
   };
 
+  fetchEmailContent();
+
+  const itemChangedHandler = () => {
     fetchEmailContent();
+  };
 
-    const itemChangedHandler = () => {
-      fetchEmailContent();
-    };
+  Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
 
-    Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
+  return () => {
+    Office.context.mailbox.removeHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
+  };
+}, []);
 
-    return () => {
-      Office.context.mailbox.removeHandlerAsync(Office.EventType.ItemChanged, itemChangedHandler);
-    };
-  }, []);
 
 
   return (
