@@ -6,7 +6,6 @@ import { AxiosResponse } from 'axios';
 /*
      Interacting with the Office document
 */
-
 export const writeFileNamesToEmail = async (
     result: AxiosResponse,
     displayError: (x: string) => void
@@ -19,10 +18,40 @@ export const writeFileNamesToEmail = async (
       displayError(error.toString());
     }
   };
-  
+
 /*
     Managing the dialogs.
 */
+
+// Define processDialogEvent first
+const processDialogEvent = (
+    arg: { error: number; type: string },
+    setState: (x: AppState) => void,
+    displayError: (x: string) => void
+) => {
+
+    switch (arg.error) {
+        case 12002:
+            displayError('The dialog box has been directed to a page that it cannot find or load, or the URL syntax is invalid.');
+            break;
+        case 12003:
+            displayError('The dialog box has been directed to a URL with the HTTP protocol. HTTPS is required.');
+            break;
+        case 12006:
+            // 12006 means that the user closed the dialog instead of waiting for it to close.
+            // It is not known if the user completed the login or logout, so assume the user is
+            // logged out and revert to the app's starting state. It does no harm for a user to
+            // press the login button again even if the user is logged in.
+            setState({
+                authStatus: 'notLoggedIn',
+                currentFrame: 'default'
+            });
+            break;
+        default:
+            displayError('Unknown error in dialog box.');
+            break;
+    }
+};
 
 let loginDialog: Office.Dialog;
 const dialogLoginUrl: string = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + '/login/login.html';
@@ -36,19 +65,23 @@ export const signInO365 = (
 
     setState({ authStatus: 'loginInProcess', currentFrame: 'default' });
 
-    Office.context.ui.displayDialogAsync(
-        dialogLoginUrl,
-        { height: 40, width: 30 },
-        (result) => {
-            if (result.status === Office.AsyncResultStatus.Failed) {
-                displayError(`${result.error.code} ${result.error.message}`);
-            } else {
-                loginDialog = result.value;
-                loginDialog.addEventHandler(Office.EventType.DialogMessageReceived, processLoginMessage);
-                loginDialog.addEventHandler(Office.EventType.DialogEventReceived, processLoginDialogEvent);
+    if (Office.context && Office.context.ui) {
+        Office.context.ui.displayDialogAsync(
+            dialogLoginUrl,
+            { height: 40, width: 30 },
+            (result) => {
+                if (result.status === Office.AsyncResultStatus.Failed) {
+                    displayError(`${result.error.code} ${result.error.message}`);
+                } else {
+                    loginDialog = result.value;
+                    loginDialog.addEventHandler(Office.EventType.DialogMessageReceived, processLoginMessage);
+                    loginDialog.addEventHandler(Office.EventType.DialogEventReceived, processLoginDialogEvent);
+                }
             }
-        }
-    );
+        );
+    } else {
+        displayError("Office context is not available.");
+    }
 
     const processLoginMessage = (arg: { message: string; origin: string }) => {
         // Confirm origin is correct.
@@ -94,20 +127,24 @@ export const logoutFromO365 = async (
     displayError: (x: string) => void
 ) => {
 
-    Office.context.ui.displayDialogAsync(dialogLogoutUrl,
-        { height: 40, width: 30 },
-        async (result) => {
-            if (result.status === Office.AsyncResultStatus.Failed) {
-                displayError(`${result.error.code} ${result.error.message}`);
-            } else {
-                logoutDialog = result.value;
-                logoutDialog.addEventHandler(Office.EventType.DialogMessageReceived, processLogoutMessage);
-                logoutDialog.addEventHandler(Office.EventType.DialogEventReceived, processLogoutDialogEvent);
-                await delay(5000); // Wait for dialog to initialize and register handler for messaging.
-                logoutDialog.messageChild(JSON.stringify({ "userName": userName }));
+    if (Office.context && Office.context.ui) {
+        Office.context.ui.displayDialogAsync(dialogLogoutUrl,
+            { height: 40, width: 30 },
+            async (result) => {
+                if (result.status === Office.AsyncResultStatus.Failed) {
+                    displayError(`${result.error.code} ${result.error.message}`);
+                } else {
+                    logoutDialog = result.value;
+                    logoutDialog.addEventHandler(Office.EventType.DialogMessageReceived, processLogoutMessage);
+                    logoutDialog.addEventHandler(Office.EventType.DialogEventReceived, processLogoutDialogEvent);
+                    await delay(5000); // Wait for dialog to initialize and register handler for messaging.
+                    logoutDialog.messageChild(JSON.stringify({ "userName": userName }));
+                }
             }
-        }
-    );
+        );
+    } else {
+        displayError("Office context is not available.");
+    }
 
     const processLogoutMessage = () => {
         logoutDialog.close();
@@ -121,33 +158,4 @@ export const logoutFromO365 = async (
     const processLogoutDialogEvent = (arg) => {
         processDialogEvent(arg, setState, displayError);
     };
-};
-
-const processDialogEvent = (
-    arg: { error: number; type: string },
-    setState: (x: AppState) => void,
-    displayError: (x: string) => void
-) => {
-
-    switch (arg.error) {
-        case 12002:
-            displayError('The dialog box has been directed to a page that it cannot find or load, or the URL syntax is invalid.');
-            break;
-        case 12003:
-            displayError('The dialog box has been directed to a URL with the HTTP protocol. HTTPS is required.');
-            break;
-        case 12006:
-            // 12006 means that the user closed the dialog instead of waiting for it to close.
-            // It is not known if the user completed the login or logout, so assume the user is
-            // logged out and revert to the app's starting state. It does no harm for a user to
-            // press the login button again even if the user is logged in.
-            setState({
-                authStatus: 'notLoggedIn',
-                currentFrame: 'default'
-            });
-            break;
-        default:
-            displayError('Unknown error in dialog box.');
-            break;
-    }
 };
